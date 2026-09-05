@@ -1,16 +1,51 @@
-# React + Vite
+# SUNSET - Mạng xã hội thu nhỏ
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Đồ án React + Node.js: xây dựng mạng xã hội thu nhỏ (đăng bài, kết bạn, thông báo, báo cáo vi phạm, trang quản trị...).
 
-Currently, two official plugins are available:
+- Frontend: React 19 + Vite
+- Backend: Node.js + Express
+- Database: MySQL
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Cài đặt và chạy (môi trường phát triển cục bộ)
 
-## React Compiler
+### 1. Cơ sở dữ liệu
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+mysql -u root -p < backend-nodejs/sql/schema.sql
+cd backend-nodejs && node scripts/migrate.js
+```
 
-## Expanding the Oxlint configuration
+### 2. Cấu hình biến môi trường
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Sao chép `.env.example` thành `.env` ở cả thư mục gốc và `backend-nodejs/`, điền các giá trị cần thiết (thông tin kết nối MySQL, JWT secret, SMTP nếu muốn gửi email đặt lại mật khẩu thật, Google/Facebook OAuth Client ID nếu muốn dùng đăng nhập mạng xã hội).
+
+### 3. Chạy Backend (cổng 4000)
+
+```
+cd backend-nodejs
+npm install
+npm run dev
+```
+
+### 4. Chạy Frontend (cổng 5173)
+
+```
+npm install
+npm run dev
+```
+
+### 5. Truy cập trang chính
+
+Mở trình duyệt tại **http://localhost:5173**, đăng ký một tài khoản người dùng bình thường để dùng thử các chức năng.
+
+### 6. Truy cập trang Quản trị (Admin)
+
+Trang Quản trị dùng địa chỉ đăng nhập riêng, không có liên kết công khai trên giao diện chính:
+
+1. Cấp quyền admin cho một tài khoản đã đăng ký bằng lệnh SQL (thay email cho đúng):
+   ```sql
+   UPDATE nova_db.users SET role = 'admin' WHERE email = '<email vừa đăng ký>';
+   ```
+2. Mở **http://localhost:5173/admin-portal**, đăng nhập bằng tài khoản vừa được cấp quyền ở bước trên. Hệ thống sẽ tự chuyển vào trang Quản trị tại `/admin`.
+
+> **Lưu ý thứ tự:** phải chạy xong Backend + Frontend và mở được trang chính trước, vì trang Quản trị dùng chung backend/database với trang chính và cần có sẵn ít nhất một tài khoản để cấp quyền admin ở bước 1.
