@@ -43,7 +43,7 @@ export default function Register() {
             Tạo tài khoản
           </h1>
           <p style={{ fontSize: 14, color: 'var(--text-2)', marginBottom: 36 }}>
-            Tham gia cộng đồng NOVA ngay hôm nay.
+            Tham gia cộng đồng SUNSET ngay hôm nay.
           </p>
 
           {/* Social buttons */}

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { Bookmark } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import PostCard from '../components/PostCard'
 import { mapPost } from '../core/posts'
@@ -31,11 +30,7 @@ export default function Bookmarks() {
         <div style={{ width: '100%', maxWidth: 1080, padding: '20px 24px 40px', minWidth: 0 }}>
           {/* Header */}
           <div style={{ marginBottom: 22 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Bookmark size={22} color="#d4a574" fill="#d4a574" />
-              <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--text)' }}>Đã lưu</h1>
-            </div>
-            <p style={{ fontSize: 14, color: 'var(--text-3)', marginTop: 4 }}>Tất cả bài viết đã lưu của bạn ở một nơi.</p>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--text)' }}>Đã lưu</h1>
             {!loading && (
               <p style={{ fontSize: 13.5, fontWeight: 600, color: '#d9b48f', marginTop: 8 }}>{posts.length} mục đã lưu</p>
             )}

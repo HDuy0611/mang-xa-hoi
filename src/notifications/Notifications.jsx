@@ -12,6 +12,7 @@ const tabs = [
   { key: 'comment', label: 'Bình luận' },
   { key: 'friend_request', label: 'Lời mời kết bạn' },
   { key: 'friend_accept', label: 'Đã kết bạn' },
+  { key: 'warning', label: 'Cảnh cáo' },
 ]
 
 export default function Notifications() {

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import axios from 'axios'
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, BadgeCheck, Trash2 } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, BadgeCheck, Trash2, Flag } from 'lucide-react'
 import { useAuth } from '../core/AuthContext'
 import CommentsModal from './CommentsModal'
+import ReportModal from './ReportModal'
 
 const CARD_BG = 'var(--surface)'
 const BORDER = 'rgba(var(--overlay-rgb),0.08)'
@@ -45,6 +46,7 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
   const [hovered, setHovered] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [reportOpen, setReportOpen] = useState(false)
 
   const [commentsOpen, setCommentsOpen] = useState(false)
   const [commentCount, setCommentCount] = useState(post.comments)
@@ -143,7 +145,7 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
           </div>
         </div>
 
-        {isOwner && (
+        {user && (
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setMenuOpen(o => !o)}
@@ -169,21 +171,37 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
                   background: 'var(--surface)', border: `1px solid ${BORDER}`, borderRadius: 12,
                   padding: 6, minWidth: 160, boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
                 }}>
-                  <button
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 8, width: '100%',
-                      padding: '9px 10px', borderRadius: 8, border: 'none',
-                      cursor: deleting ? 'not-allowed' : 'pointer',
-                      fontSize: 13, fontWeight: 600, color: '#f87171',
-                      background: 'transparent', textAlign: 'left',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-                  >
-                    <Trash2 size={14} /> {deleting ? 'Đang xoá...' : 'Xoá bài viết'}
-                  </button>
+                  {isOwner ? (
+                    <button
+                      onClick={handleDelete}
+                      disabled={deleting}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                        padding: '9px 10px', borderRadius: 8, border: 'none',
+                        cursor: deleting ? 'not-allowed' : 'pointer',
+                        fontSize: 13, fontWeight: 600, color: '#f87171',
+                        background: 'transparent', textAlign: 'left',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                    >
+                      <Trash2 size={14} /> {deleting ? 'Đang xoá...' : 'Xoá bài viết'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setMenuOpen(false); setReportOpen(true) }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                        padding: '9px 10px', borderRadius: 8, border: 'none',
+                        cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#f87171',
+                        background: 'transparent', textAlign: 'left',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.1)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+                    >
+                      <Flag size={14} /> Báo cáo bài viết
+                    </button>
+                  )}
                 </div>
               </>
             )}
@@ -274,6 +292,15 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
           onClose={() => setCommentsOpen(false)}
           onCommentAdded={() => setCommentCount(c => c + 1)}
           onCommentDeleted={() => setCommentCount(c => c - 1)}
+        />
+      )}
+
+      {reportOpen && (
+        <ReportModal
+          targetType="post"
+          targetId={post.id}
+          targetLabel={`Bài viết của @${post.username}`}
+          onClose={() => setReportOpen(false)}
         />
       )}
     </div>

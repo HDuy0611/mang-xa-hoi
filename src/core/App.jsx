@@ -19,8 +19,11 @@ import Friends from '../friends/Friends'
 import Bookmarks from '../bookmarks/Bookmarks'
 import Settings from '../settings/Settings'
 import CreatePost from '../createpost/CreatePost'
+import Admin from '../admin/Admin'
+import AdminLogin from '../admin/AdminLogin'
 
 function Home() {
+  const { user } = useAuth()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -37,7 +40,9 @@ function Home() {
       {/* 3 cột độc lập bằng CSS Grid — cùng gridTemplateColumns với Navbar, mỗi cột tự đứng riêng, sửa cột này không ảnh hưởng cột khác */}
       <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 280px', gap: 20, alignItems: 'start', padding: '80px 20px 20px', minHeight: '100vh' }}>
 
-        <FriendsPanel />
+        {/* Admin là tài khoản quản trị riêng, không dùng để kết bạn — ẩn nội dung nhưng vẫn giữ chỗ trong lưới,
+            nếu không feed sẽ bị đẩy sang cột đầu (280px) do lưới CSS xếp theo số phần tử con thực có trong DOM */}
+        {user?.role !== 'admin' ? <FriendsPanel /> : <div />}
 
         {/* Cột giữa: feed — canh giữa phần còn lại để không bị lệch phải */}
         <div style={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
@@ -72,6 +77,13 @@ function ProtectedRoute({ children }) {
   return children
 }
 
+function AdminRoute({ children }) {
+  const { isAuthenticated, user } = useAuth()
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (user?.role !== 'admin') return <Navigate to="/" replace />
+  return children
+}
+
 function App() {
   return (
     <Routes>
@@ -83,6 +95,8 @@ function App() {
       <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/create-post" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
+      <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+      <Route path="/admin-portal" element={<AdminLogin />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />

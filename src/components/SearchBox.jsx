@@ -4,7 +4,7 @@ import axios from 'axios'
 import { Search, FileText } from 'lucide-react'
 import Avatar from './Avatar'
 
-export default function SearchBox({ placeholder = 'Tìm kiếm trên NOVA', width = '25%' }) {
+export default function SearchBox({ placeholder = 'Tìm kiếm trên SUNSET', width = '25%' }) {
   const [query, setQuery] = useState('')
   const [focus, setFocus] = useState(false)
   const [results, setResults] = useState({ users: [], posts: [] })

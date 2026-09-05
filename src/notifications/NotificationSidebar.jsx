@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Heart, MessageCircle, UserPlus, UserCheck, Bell, CheckCircle2, Settings } from 'lucide-react'
+import { Heart, MessageCircle, UserPlus, UserCheck, Bell, CheckCircle2, Settings, AlertTriangle } from 'lucide-react'
 
 const CARD_BG = 'var(--surface)'
 const BORDER = 'rgba(var(--overlay-rgb),0.07)'
@@ -10,6 +10,7 @@ const filters = [
   { key: 'comment', label: 'Bình luận', icon: MessageCircle },
   { key: 'friend_request', label: 'Lời mời kết bạn', icon: UserPlus },
   { key: 'friend_accept', label: 'Đã kết bạn', icon: UserCheck },
+  { key: 'warning', label: 'Cảnh cáo', icon: AlertTriangle },
 ]
 
 function InfoCard() {

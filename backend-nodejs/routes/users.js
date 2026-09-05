@@ -6,7 +6,7 @@ import { upload } from '../middleware/upload.js'
 
 const router = Router()
 
-const SELECT_PROFILE = `SELECT id, name, username, email, bio, location, website,
+const SELECT_PROFILE = `SELECT id, name, username, email, bio, location, website, role,
     avatar_url AS avatarUrl, cover_url AS coverUrl, created_at AS createdAt
   FROM users WHERE id = ?`
 

@@ -94,6 +94,7 @@ export default function Profile() {
   const sourceUser = isOwnProfile ? authUser : otherUser
 
   const user = sourceUser ? {
+    id: sourceUser.id,
     name: sourceUser.name || 'Người dùng',
     username: sourceUser.username || '',
     initials: getInitials(sourceUser.name),

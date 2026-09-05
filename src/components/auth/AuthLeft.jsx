@@ -30,7 +30,7 @@ export default function AuthLeft() {
             <path d="M32 6L33 9L36 10L33 11L32 14L31 11L28 10L31 9Z" fill="#d9b48f" />
             <circle cx="3.5" cy="22" r="2.2" fill="#d4a574" />
           </svg>
-          <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: '2px', background: 'linear-gradient(135deg,#d4a574,#c1793d,#8b4a28)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>NOVA</span>
+          <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: '2px', background: 'linear-gradient(135deg,#d4a574,#c1793d,#8b4a28)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>SUNSET</span>
         </div>
 
         <h1 style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.25, color: '#fff', maxWidth: 340 }}>
@@ -45,7 +45,7 @@ export default function AuthLeft() {
 
       {/* Bottom tagline */}
       <div style={{ position: 'relative', zIndex: 2 }}>
-        <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: '2px', background: 'linear-gradient(135deg,#d4a574,#c1793d,#8b4a28)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>NOVA</span>
+        <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: '2px', background: 'linear-gradient(135deg,#d4a574,#c1793d,#8b4a28)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>SUNSET</span>
         <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.5px', marginTop: 4 }}>Kết nối. Chia sẻ. Khám phá.</p>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Heart, MessageCircle, UserPlus, UserCheck } from 'lucide-react'
+import { Heart, MessageCircle, UserPlus, UserCheck, AlertTriangle } from 'lucide-react'
 import Avatar from '../components/Avatar'
 import { timeAgo } from '../core/posts'
 
@@ -10,6 +10,7 @@ const badgeByType = {
   comment: { icon: MessageCircle, bg: '#d4a574' },
   friend_request: { icon: UserPlus, bg: '#c1793d' },
   friend_accept: { icon: UserCheck, bg: '#6f8f4f' },
+  warning: { icon: AlertTriangle, bg: '#c0392b' },
 }
 
 const actionByType = {
@@ -53,7 +54,11 @@ export default function NotificationItem({ item, onRead }) {
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: 13.5, color: 'var(--text)', lineHeight: 1.4 }}>
-          <span style={{ fontWeight: 700 }}>{item.actorName}</span> {actionByType[item.type]}
+          {item.type === 'warning' ? (
+            <>Quản trị viên đã cảnh cáo bạn: <span style={{ fontStyle: 'italic' }}>"{item.message}"</span></>
+          ) : (
+            <><span style={{ fontWeight: 700 }}>{item.actorName}</span> {actionByType[item.type]}</>
+          )}
         </p>
         <p style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{timeAgo(item.createdAt)}</p>
       </div>

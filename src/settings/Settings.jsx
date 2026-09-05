@@ -334,7 +334,7 @@ function AppearanceSection({ settings, onChange }) {
       <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>Giao diện</h2>
       <ToggleRow
         label="Chế độ tối"
-        desc="Đổi giao diện NOVA sang nền đen, áp dụng ngay và nhớ cho lần đăng nhập sau"
+        desc="Đổi giao diện SUNSET sang nền đen, áp dụng ngay và nhớ cho lần đăng nhập sau"
         on={settings.theme === 'dark'}
         onClick={toggleTheme}
       />

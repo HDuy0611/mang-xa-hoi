@@ -11,6 +11,9 @@ import notificationsRouter from './routes/notifications.js'
 import bookmarksRouter from './routes/bookmarks.js'
 import searchRouter from './routes/search.js'
 import settingsRouter from './routes/settings.js'
+import adminAuthRouter from './routes/adminAuth.js'
+import adminRouter from './routes/admin.js'
+import reportsRouter from './routes/reports.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -28,6 +31,11 @@ app.use('/api/notifications', notificationsRouter)
 app.use('/api/bookmarks', bookmarksRouter)
 app.use('/api/search', searchRouter)
 app.use('/api/settings', settingsRouter)
+// adminAuthRouter chỉ có POST /login (public) và phải đứng TRƯỚC adminRouter,
+// vì adminRouter áp requireAuth+requireAdmin cho mọi path con /api/admin/* kể cả /login.
+app.use('/api/admin', adminAuthRouter)
+app.use('/api/admin', adminRouter)
+app.use('/api/reports', reportsRouter)
 
 const port = process.env.PORT || 4000
 app.listen(port, () => {

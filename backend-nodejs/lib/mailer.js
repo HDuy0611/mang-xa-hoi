@@ -26,11 +26,11 @@ export async function sendPasswordResetEmail(to, resetLink) {
   }
 
   await t.sendMail({
-    from: process.env.SMTP_FROM || 'NOVA <no-reply@nova.local>',
+    from: process.env.SMTP_FROM || 'SUNSET <no-reply@sunset.local>',
     to,
-    subject: 'Đặt lại mật khẩu NOVA',
+    subject: 'Đặt lại mật khẩu SUNSET',
     html: `
-      <p>Bạn (hoặc ai đó) đã yêu cầu đặt lại mật khẩu cho tài khoản NOVA của bạn.</p>
+      <p>Bạn (hoặc ai đó) đã yêu cầu đặt lại mật khẩu cho tài khoản SUNSET của bạn.</p>
       <p><a href="${resetLink}">Nhấn vào đây để đặt lại mật khẩu</a> (liên kết hết hạn sau 1 giờ).</p>
       <p>Nếu không phải bạn yêu cầu, hãy bỏ qua email này.</p>
     `,

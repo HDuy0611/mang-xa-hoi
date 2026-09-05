@@ -7,7 +7,7 @@ const router = Router()
 router.get('/', requireAuth, async (req, res) => {
   const [rows] = await pool.query(
     `SELECT n.id, n.type, n.is_read AS isRead, n.created_at AS createdAt,
-            n.post_id AS postId, n.comment_id AS commentId,
+            n.post_id AS postId, n.comment_id AS commentId, n.message,
             a.id AS actorId, a.name AS actorName, a.username AS actorUsername, a.avatar_url AS actorAvatarUrl
      FROM notifications n
      JOIN users a ON a.id = n.actor_id

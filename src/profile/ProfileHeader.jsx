@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Calendar, Link as LinkIcon, UserPlus, UserCheck, Clock, Ban, Check, Copy } from 'lucide-react'
+import { MapPin, Calendar, Link as LinkIcon, UserPlus, UserCheck, Clock, Ban, Check, Copy, Flag } from 'lucide-react'
 import coverImg from '../assets/images/929ef642-a5f0-4c9b-ba85-bd027a3f6d33.png'
+import ReportModal from '../components/ReportModal'
 
 const CARD_BG = 'var(--surface)'
 const BORDER = 'rgba(var(--overlay-rgb),0.07)'
@@ -125,6 +126,7 @@ function FriendActionButton({ relationship, blockedByMe, onFriendAction }) {
 export default function ProfileHeader({ user, isOwnProfile, relationship, blockedByMe, onFriendAction }) {
   const [hovEdit, setHovEdit] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [reportOpen, setReportOpen] = useState(false)
   const navigate = useNavigate()
 
   function handleShare() {
@@ -207,6 +209,20 @@ export default function ProfileHeader({ user, isOwnProfile, relationship, blocke
             >
               {copied ? <><Check size={14} /> Đã sao chép</> : <><Copy size={14} /> Chia sẻ trang cá nhân</>}
             </button>
+            {!isOwnProfile && (
+              <button
+                onClick={() => setReportOpen(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  fontSize: 13, fontWeight: 700, padding: '10px 14px', borderRadius: 11,
+                  cursor: 'pointer', color: '#f87171',
+                  background: 'rgba(var(--overlay-rgb),0.05)',
+                  border: '1px solid rgba(var(--overlay-rgb),0.14)',
+                }}
+              >
+                <Flag size={14} /> Báo cáo
+              </button>
+            )}
           </div>
         </div>
 
@@ -245,6 +261,15 @@ export default function ProfileHeader({ user, isOwnProfile, relationship, blocke
           <StatBlock value={user.stats.friends} label="Bạn bè" />
         </div>
       </div>
+
+      {reportOpen && (
+        <ReportModal
+          targetType="user"
+          targetId={user.id}
+          targetLabel={`@${user.username}`}
+          onClose={() => setReportOpen(false)}
+        />
+      )}
     </div>
   )
 }

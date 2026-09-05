@@ -31,6 +31,10 @@ await addColumnIfMissing(
   'users.role'
 )
 await addColumnIfMissing(
+  'ALTER TABLE nova_db.users ADD COLUMN is_locked BOOLEAN NOT NULL DEFAULT FALSE',
+  'users.is_locked'
+)
+await addColumnIfMissing(
   'ALTER TABLE nova_db.users ADD COLUMN google_id VARCHAR(255) NULL UNIQUE',
   'users.google_id'
 )
@@ -50,12 +54,40 @@ await addColumnIfMissing(
   'ALTER TABLE nova_db.friendships ADD COLUMN was_friends BOOLEAN NOT NULL DEFAULT FALSE',
   'friendships.was_friends'
 )
+await addColumnIfMissing(
+  'ALTER TABLE nova_db.users ADD COLUMN locked_until DATETIME NULL',
+  'users.locked_until'
+)
+await addColumnIfMissing(
+  'ALTER TABLE nova_db.users ADD COLUMN locked_reason VARCHAR(500) NULL',
+  'users.locked_reason'
+)
+await addColumnIfMissing(
+  'ALTER TABLE nova_db.notifications ADD COLUMN message VARCHAR(500) NULL',
+  'notifications.message'
+)
 
 try {
   await connection.query('ALTER TABLE nova_db.users MODIFY COLUMN password_hash VARCHAR(255) NULL')
   console.log('Made "password_hash" nullable (for social-login-only accounts).')
 } catch (err) {
   console.error('Could not modify password_hash column:', err.message)
+}
+
+try {
+  await connection.query(
+    "ALTER TABLE nova_db.notifications MODIFY COLUMN type ENUM('like', 'comment', 'friend_request', 'friend_accept', 'warning') NOT NULL"
+  )
+  console.log('Widened "notifications.type" to include \'warning\'.')
+} catch (err) {
+  console.error('Could not modify notifications.type column:', err.message)
+}
+
+try {
+  await connection.query('DROP TABLE IF EXISTS nova_db.admin_logs')
+  console.log('Dropped table "admin_logs" (feature removed).')
+} catch (err) {
+  console.error('Could not drop admin_logs table:', err.message)
 }
 
 await connection.end()

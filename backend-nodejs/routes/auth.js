@@ -27,9 +27,27 @@ async function reactivateIfNeeded(userId) {
   await pool.query('UPDATE user_settings SET is_deactivated = FALSE WHERE user_id = ?', [userId])
 }
 
+async function checkLockMessage(userId, isLocked, lockedUntil, lockedReason) {
+  if (!isLocked) return null
+
+  if (lockedUntil && new Date(lockedUntil) <= new Date()) {
+    await pool.query('UPDATE users SET is_locked = FALSE, locked_until = NULL, locked_reason = NULL WHERE id = ?', [userId])
+    return null
+  }
+
+  const reasonPart = lockedReason ? ` Lý do: ${lockedReason}.` : ''
+
+  if (lockedUntil) {
+    const until = new Date(lockedUntil).toLocaleDateString('vi-VN')
+    return `Tài khoản của bạn đã bị khóa đến ngày ${until}.${reasonPart} Vui lòng liên hệ quản trị viên.`
+  }
+
+  return `Tài khoản của bạn đã bị khóa vĩnh viễn.${reasonPart} Vui lòng liên hệ quản trị viên.`
+}
+
 function issueToken(user) {
   const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' })
-  return { token, user: { id: user.id, name: user.name, username: user.username, email: user.email } }
+  return { token, user: { id: user.id, name: user.name, username: user.username, email: user.email, role: user.role || 'user' } }
 }
 
 async function findOrCreateOAuthUser({ provider, providerId, email, name, picture }) {
@@ -95,7 +113,7 @@ router.post('/login', async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      'SELECT id, name, username, email, password_hash FROM users WHERE email = ?',
+      'SELECT id, name, username, email, password_hash, role, is_locked AS isLocked, locked_until AS lockedUntil, locked_reason AS lockedReason FROM users WHERE email = ?',
       [email.trim()]
     )
     const user = rows[0]
@@ -110,6 +128,15 @@ router.post('/login', async (req, res) => {
     const passwordMatches = await bcrypt.compare(password, user.password_hash)
     if (!passwordMatches) {
       return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng.' })
+    }
+    if (user.role === 'admin') {
+      // Tài khoản admin không được phép đăng nhập qua cổng công khai này, kể cả khi đúng mật khẩu —
+      // trả về đúng thông báo sai mật khẩu để không lộ ra rằng email này là tài khoản admin.
+      return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng.' })
+    }
+    const lockMessage = await checkLockMessage(user.id, user.isLocked, user.lockedUntil, user.lockedReason)
+    if (lockMessage) {
+      return res.status(403).json({ message: lockMessage })
     }
 
     await reactivateIfNeeded(user.id)
@@ -136,6 +163,13 @@ router.post('/google', async (req, res) => {
       name: profile.name,
       picture: profile.picture,
     })
+    if (user.role === 'admin') {
+      return res.status(401).json({ message: 'Đăng nhập Google thất bại.' })
+    }
+    const lockMessage = await checkLockMessage(user.id, user.is_locked, user.locked_until, user.locked_reason)
+    if (lockMessage) {
+      return res.status(403).json({ message: lockMessage })
+    }
     await reactivateIfNeeded(user.id)
     return res.json(issueToken(user))
   } catch (err) {
@@ -162,6 +196,13 @@ router.post('/facebook', async (req, res) => {
       name: profile.name,
       picture: profile.picture,
     })
+    if (user.role === 'admin') {
+      return res.status(401).json({ message: 'Đăng nhập Facebook thất bại.' })
+    }
+    const lockMessage = await checkLockMessage(user.id, user.is_locked, user.locked_until, user.locked_reason)
+    if (lockMessage) {
+      return res.status(403).json({ message: lockMessage })
+    }
     await reactivateIfNeeded(user.id)
     return res.json(issueToken(user))
   } catch (err) {

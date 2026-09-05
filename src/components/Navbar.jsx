@@ -18,6 +18,10 @@ function NavPill({ items, activePath, unreadCount, onNavigate }) {
   const containerRef = useRef(null)
   const itemRefs = useRef({})
   const [indicator, setIndicator] = useState({ left: 0, width: 0, ready: false })
+  const itemPadding = items.length > 5 ? '12px 18px' : '12px 32px'
+  // Ít mục (ví dụ navbar rút gọn của admin chỉ còn 2 mục) thì để pill co theo đúng nội dung
+  // thay vì kéo giãn hết 640px với justify-content: space-between — tránh khoảng trắng rỗng vô lý ở giữa
+  const isCompact = items.length <= 2
 
   useLayoutEffect(() => {
     const el = itemRefs.current[activePath]
@@ -33,7 +37,10 @@ function NavPill({ items, activePath, unreadCount, onNavigate }) {
 
   return (
     <div ref={containerRef} style={{
-      position: 'relative', width: '100%', maxWidth: 640, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6,
+      position: 'relative',
+      width: isCompact ? 'auto' : '100%',
+      maxWidth: isCompact ? 'none' : 640,
+      display: 'flex', alignItems: 'center', justifyContent: isCompact ? 'center' : 'space-between', gap: isCompact ? 4 : 6,
       background: 'var(--nav-pill-bg)',
       border: '1px solid var(--nav-pill-border)',
       borderRadius: 999, padding: '5px 8px',
@@ -55,7 +62,7 @@ function NavPill({ items, activePath, unreadCount, onNavigate }) {
             onClick={() => onNavigate(path)}
             style={{
               position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 6,
-              padding: '12px 32px', borderRadius: 999, border: 'none', cursor: 'pointer',
+              padding: itemPadding, borderRadius: 999, border: 'none', cursor: 'pointer',
               background: 'transparent',
               fontSize: 13.5, fontWeight: active ? 600 : 500,
               color: active ? 'var(--nav-text)' : 'var(--nav-text-dim)',
@@ -85,7 +92,15 @@ export default function Navbar() {
   const { user } = useAuth()
   const [unreadCount, setUnreadCount] = useState(0)
 
+  const isAdmin = user?.role === 'admin'
+
+  // Admin là tài khoản quản trị riêng, không dùng các mục mạng xã hội — chỉ giữ Trang chủ + Quản trị
+  const items = isAdmin
+    ? [navItems[0], { label: 'Quản trị', path: '/admin' }]
+    : navItems
+
   useEffect(() => {
+    if (isAdmin) return
     function fetchUnread() {
       axios.get('/api/notifications/unread-count')
         .then(res => setUnreadCount(res.data.count))
@@ -94,7 +109,7 @@ export default function Navbar() {
     fetchUnread()
     const interval = setInterval(fetchUnread, 30000)
     return () => clearInterval(interval)
-  }, [location.pathname])
+  }, [location.pathname, isAdmin])
 
   return (
     <nav style={{
@@ -133,7 +148,7 @@ export default function Navbar() {
         {/* Cột giữa: nav pill — giữ nguyên, không đổi */}
         <div style={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
           <NavPill
-            items={navItems}
+            items={items}
             activePath={location.pathname}
             unreadCount={unreadCount}
             onNavigate={navigate}

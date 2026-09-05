@@ -8,6 +8,9 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   role VARCHAR(20) NOT NULL DEFAULT 'user',
+  is_locked BOOLEAN NOT NULL DEFAULT FALSE,
+  locked_until DATETIME NULL,
+  locked_reason VARCHAR(500) NULL,
   avatar_url VARCHAR(500) NULL,
   cover_url VARCHAR(500) NULL,
   bio TEXT NULL,
@@ -73,9 +76,10 @@ CREATE TABLE IF NOT EXISTS notifications (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   actor_id INT NOT NULL,
-  type ENUM('like', 'comment', 'friend_request', 'friend_accept') NOT NULL,
+  type ENUM('like', 'comment', 'friend_request', 'friend_accept', 'warning') NOT NULL,
   post_id INT NULL,
   comment_id INT NULL,
+  message VARCHAR(500) NULL,
   is_read BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -105,4 +109,18 @@ CREATE TABLE IF NOT EXISTS password_resets (
   used BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  reporter_id INT NOT NULL,
+  target_type ENUM('user', 'post') NOT NULL,
+  target_id INT NOT NULL,
+  reason VARCHAR(500) NOT NULL,
+  status ENUM('pending', 'resolved', 'dismissed') NOT NULL DEFAULT 'pending',
+  resolved_by INT NULL,
+  resolved_at TIMESTAMP NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (resolved_by) REFERENCES users(id) ON DELETE SET NULL
 );
