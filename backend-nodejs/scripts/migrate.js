@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import mysql from 'mysql2/promise'
+import bcrypt from 'bcrypt'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const schemaPath = path.join(__dirname, '..', 'sql', 'schema.sql')
@@ -88,6 +89,24 @@ try {
   console.log('Dropped table "admin_logs" (feature removed).')
 } catch (err) {
   console.error('Could not drop admin_logs table:', err.message)
+}
+
+const [existingAdmin] = await connection.query(
+  "SELECT id FROM nova_db.users WHERE username = 'admin' OR email = 'admin'"
+)
+const adminHash = await bcrypt.hash('admin', 10)
+if (existingAdmin.length === 0) {
+  await connection.query(
+    "INSERT INTO nova_db.users (name, username, email, password_hash, role) VALUES ('Quản trị viên', 'admin', 'admin', ?, 'admin')",
+    [adminHash]
+  )
+  console.log('Seeded default admin account (tài khoản: admin / mật khẩu: admin).')
+} else {
+  await connection.query(
+    "UPDATE nova_db.users SET email = 'admin', password_hash = ?, role = 'admin' WHERE id = ?",
+    [adminHash, existingAdmin[0].id]
+  )
+  console.log('Updated existing admin account to tài khoản: admin / mật khẩu: admin.')
 }
 
 await connection.end()

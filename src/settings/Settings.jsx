@@ -484,9 +484,6 @@ export default function Settings() {
                     padding: '10px 14px', borderRadius: 12, width: '100%',
                     border: 'none', cursor: 'pointer', fontSize: 14,
                     fontWeight: isActive ? 600 : 400,
-                    marginTop: key === 'logout' ? 8 : 0,
-                    borderTop: key === 'logout' ? '1px solid rgba(var(--overlay-rgb),0.08)' : 'none',
-                    paddingTop: key === 'logout' ? 18 : 10,
                     color: isDangerLike && isActive ? '#dc2626' : isActive ? '#6b3820' : 'var(--text-2)',
                     background: isActive
                       ? isDangerLike ? 'rgba(220,38,38,0.1)' : 'linear-gradient(135deg, rgba(193,121,61,0.16), rgba(139,74,40,0.1))'

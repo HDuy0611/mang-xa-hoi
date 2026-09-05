@@ -6,7 +6,7 @@ const ThemeContext = createContext(null)
 
 export function ThemeProvider({ children }) {
   const { isAuthenticated } = useAuth()
-  const [theme, setThemeState] = useState(() => localStorage.getItem('nova_theme') || 'light')
+  const [theme, setThemeState] = useState(() => localStorage.getItem('nova_theme') || 'dark')
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)

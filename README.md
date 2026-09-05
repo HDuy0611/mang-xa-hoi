@@ -40,12 +40,11 @@ Mở trình duyệt tại **http://localhost:5173**, đăng ký một tài kho�
 
 ### 6. Truy cập trang Quản trị (Admin)
 
-Trang Quản trị dùng địa chỉ đăng nhập riêng, không có liên kết công khai trên giao diện chính:
+Trang Quản trị dùng địa chỉ đăng nhập riêng, không có liên kết công khai trên giao diện chính. Một tài khoản quản trị mặc định đã được tự động tạo sẵn khi chạy `node scripts/migrate.js` ở bước 1:
 
-1. Cấp quyền admin cho một tài khoản đã đăng ký bằng lệnh SQL (thay email cho đúng):
-   ```sql
-   UPDATE nova_db.users SET role = 'admin' WHERE email = '<email vừa đăng ký>';
-   ```
-2. Mở **http://localhost:5173/admin-portal**, đăng nhập bằng tài khoản vừa được cấp quyền ở bước trên. Hệ thống sẽ tự chuyển vào trang Quản trị tại `/admin`.
+- **Tài khoản:** `admin`
+- **Mật khẩu:** `admin`
 
-> **Lưu ý thứ tự:** phải chạy xong Backend + Frontend và mở được trang chính trước, vì trang Quản trị dùng chung backend/database với trang chính và cần có sẵn ít nhất một tài khoản để cấp quyền admin ở bước 1.
+Mở **http://localhost:5173/admin-portal**, đăng nhập bằng tài khoản trên. Hệ thống sẽ tự chuyển vào trang Quản trị tại `/admin`.
+
+> **Lưu ý thứ tự:** phải chạy xong Backend + Frontend trước (mục 3, 4), vì trang Quản trị dùng chung backend/database với trang chính.

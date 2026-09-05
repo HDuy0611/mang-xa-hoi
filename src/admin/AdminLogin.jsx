@@ -36,6 +36,9 @@ export default function AdminLogin() {
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       background: 'var(--bg)', padding: 20,
+      '--bg': '#1C1C1D', '--surface': '#262627', '--surface-2': '#303032',
+      '--border': 'rgba(255,255,255,0.09)', '--text': '#F2F2F2', '--text-2': '#A3A3A3',
+      '--text-3': '#6E6E6E', '--overlay-rgb': '255,255,255', '--shadow': '0 4px 24px rgba(0,0,0,0.5)',
     }}>
       <form onSubmit={handleSubmit} className="card" style={{ width: '100%', maxWidth: 360, padding: '36px 32px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginBottom: 28 }}>
@@ -52,7 +55,7 @@ export default function AdminLogin() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Field icon={<Mail size={16} />} type="email" placeholder="Email quản trị" value={email} onChange={e => setEmail(e.target.value)} />
+          <Field icon={<Mail size={16} />} type="text" placeholder="Tài khoản quản trị" value={email} onChange={e => setEmail(e.target.value)} />
           <Field icon={<Lock size={16} />} type="password" placeholder="Mật khẩu" value={password} onChange={e => setPassword(e.target.value)} />
         </div>
 
