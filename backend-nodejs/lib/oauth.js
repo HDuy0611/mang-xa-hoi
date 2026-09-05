@@ -1,28 +1,23 @@
-import { OAuth2Client } from 'google-auth-library'
-
 export class OAuthNotConfiguredError extends Error {}
 
-let googleClient = null
-
-export async function verifyGoogleToken(idToken) {
+export async function verifyGoogleToken(accessToken) {
   if (!process.env.GOOGLE_CLIENT_ID) {
     throw new OAuthNotConfiguredError('Đăng nhập Google chưa được cấu hình (thiếu GOOGLE_CLIENT_ID trong .env).')
   }
-  if (!googleClient) {
-    googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
-  }
 
-  const ticket = await googleClient.verifyIdToken({
-    idToken,
-    audience: process.env.GOOGLE_CLIENT_ID,
+  const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { Authorization: `Bearer ${accessToken}` },
   })
-  const payload = ticket.getPayload()
+  if (!profileRes.ok) {
+    throw new Error('Token Google không hợp lệ.')
+  }
+  const profile = await profileRes.json()
 
-  if (!payload?.email) {
+  if (!profile?.email) {
     throw new Error('Không lấy được email từ tài khoản Google.')
   }
 
-  return { id: payload.sub, email: payload.email, name: payload.name || payload.email, picture: payload.picture || null }
+  return { id: profile.sub, email: profile.email, name: profile.name || profile.email, picture: profile.picture || null }
 }
 
 export async function verifyFacebookToken(accessToken) {

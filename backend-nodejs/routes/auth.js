@@ -149,13 +149,13 @@ router.post('/login', async (req, res) => {
 })
 
 router.post('/google', async (req, res) => {
-  const { credential } = req.body
-  if (!credential) {
+  const { accessToken } = req.body
+  if (!accessToken) {
     return res.status(400).json({ message: 'Thiếu thông tin đăng nhập Google.' })
   }
 
   try {
-    const profile = await verifyGoogleToken(credential)
+    const profile = await verifyGoogleToken(accessToken)
     const user = await findOrCreateOAuthUser({
       provider: 'google',
       providerId: profile.id,

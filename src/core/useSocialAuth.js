@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from './AuthContext'
@@ -12,6 +12,14 @@ export function useSocialAuth() {
   const navigate = useNavigate()
   const [socialError, setSocialError] = useState('')
   const [socialLoading, setSocialLoading] = useState(false)
+
+  // Tải sẵn 2 SDK ngay khi trang mở, để lúc người dùng bấm nút thì popup mở
+  // ngay lập tức (window.open chỉ được trình duyệt cho phép trong khoảng thời
+  // gian ngắn ngay sau cú click thật, nếu phải chờ tải script trước sẽ dễ bị chặn)
+  useEffect(() => {
+    if (GOOGLE_CLIENT_ID) loadGoogleScript().catch(() => {})
+    if (FACEBOOK_APP_ID) loadFacebookScript(FACEBOOK_APP_ID).catch(() => {})
+  }, [])
 
   async function finishLogin(request) {
     setSocialLoading(true)
@@ -34,11 +42,18 @@ export function useSocialAuth() {
     setSocialError('')
     try {
       const google = await loadGoogleScript()
-      google.accounts.id.initialize({
+      const client = google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
-        callback: response => finishLogin(() => axios.post('/api/auth/google', { credential: response.credential })),
+        scope: 'openid email profile',
+        callback: response => {
+          if (response.access_token) {
+            finishLogin(() => axios.post('/api/auth/google', { accessToken: response.access_token }))
+          } else {
+            setSocialError('Đăng nhập Google đã bị hủy.')
+          }
+        },
       })
-      google.accounts.id.prompt()
+      client.requestAccessToken()
     } catch {
       setSocialError('Không tải được dịch vụ đăng nhập Google.')
     }
