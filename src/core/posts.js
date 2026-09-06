@@ -10,6 +10,12 @@ export function timeAgo(dateStr) {
   return `${Math.floor(hours / 24)} ngày trước`
 }
 
+const VIDEO_EXTENSIONS = /\.(mp4|webm|mov|ogg|avi|mkv)$/i
+
+export function isVideoUrl(url) {
+  return !!url && VIDEO_EXTENSIONS.test(url)
+}
+
 export function mapPost(row) {
   return {
     id: row.id,
@@ -26,6 +32,7 @@ export function mapPost(row) {
     tags: [],
     imageBg: null,
     imageUrl: row.imageUrl || null,
+    isVideo: isVideoUrl(row.imageUrl),
     likes: row.likes,
     comments: row.comments,
     shares: 0,

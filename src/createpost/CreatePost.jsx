@@ -62,6 +62,7 @@ export default function CreatePost() {
   const [text, setText] = useState('')
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
+  const isVideoFile = imageFile?.type.startsWith('video/')
   const fileInputRef = useRef(null)
   const [audience, setAudience] = useState('Công khai')
   const [audienceOpen, setAudienceOpen] = useState(false)
@@ -69,6 +70,7 @@ export default function CreatePost() {
   const [commentPermission, setCommentPermission] = useState('everyone')
   const [commentMenuOpen, setCommentMenuOpen] = useState(false)
   const [posting, setPosting] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(null)
   const [error, setError] = useState('')
 
   const canPost = text.trim().length > 0 && !posting
@@ -76,6 +78,17 @@ export default function CreatePost() {
   function handleFileChange(e) {
     const file = e.target.files[0]
     if (!file) return
+
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+      setError('Chỉ hỗ trợ tệp ảnh hoặc video.')
+      return
+    }
+    if (file.size > 300 * 1024 * 1024) {
+      setError('Tệp vượt quá 300MB, vui lòng chọn tệp nhỏ hơn.')
+      return
+    }
+
+    setError('')
     setImageFile(file)
     setImagePreview(URL.createObjectURL(file))
   }
@@ -90,6 +103,7 @@ export default function CreatePost() {
     if (!canPost) return
     setPosting(true)
     setError('')
+    setUploadProgress(imageFile ? 0 : null)
     try {
       const formData = new FormData()
       formData.append('content', text.trim())
@@ -97,11 +111,16 @@ export default function CreatePost() {
       formData.append('commentPermission', commentPermission)
       formData.append('allowSharing', String(allowSharing))
 
-      await axios.post('/api/posts', formData)
+      await axios.post('/api/posts', formData, {
+        onUploadProgress: imageFile
+          ? (e) => setUploadProgress(e.total ? Math.round((e.loaded / e.total) * 100) : null)
+          : undefined,
+      })
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại.')
       setPosting(false)
+      setUploadProgress(null)
     }
   }
 
@@ -221,14 +240,18 @@ export default function CreatePost() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/*"
                   onChange={handleFileChange}
                   style={{ display: 'none' }}
                 />
                 {imagePreview ? (
                   <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
                     <div style={{ position: 'relative', display: 'inline-block' }}>
-                      <img src={imagePreview} alt="" style={{ maxWidth: '100%', maxHeight: 360, width: 'auto', height: 'auto', display: 'block', borderRadius: 14 }} />
+                      {isVideoFile ? (
+                        <video src={imagePreview} controls style={{ maxWidth: '100%', maxHeight: 360, width: 'auto', height: 'auto', display: 'block', borderRadius: 14, background: '#000' }} />
+                      ) : (
+                        <img src={imagePreview} alt="" style={{ maxWidth: '100%', maxHeight: 360, width: 'auto', height: 'auto', display: 'block', borderRadius: 14 }} />
+                      )}
                       <button
                         onClick={removeImage}
                         style={{
@@ -293,7 +316,7 @@ export default function CreatePost() {
                       transition: 'all 0.18s ease',
                     }}
                   >
-                    <Send size={14} /> {posting ? 'Đang đăng...' : 'Đăng'}
+                    <Send size={14} /> {posting ? (uploadProgress != null ? `Đang tải lên... ${uploadProgress}%` : 'Đang đăng...') : 'Đăng'}
                   </button>
                 </div>
               </div>

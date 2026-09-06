@@ -24,14 +24,19 @@ router.get('/stats', async (req, res) => {
 
 router.get('/users', async (req, res) => {
   const search = req.query.search?.trim()
+  const lockedOnly = req.query.locked === 'true'
   const { page, limit, offset } = parsePaging(req)
 
+  const conditions = []
   const params = []
-  let where = ''
   if (search) {
-    where = 'WHERE name LIKE ? OR username LIKE ? OR email LIKE ?'
+    conditions.push('(name LIKE ? OR username LIKE ? OR email LIKE ?)')
     params.push(`%${search}%`, `%${search}%`, `%${search}%`)
   }
+  if (lockedOnly) {
+    conditions.push('is_locked = TRUE')
+  }
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
 
   const [[{ count: total }]] = await pool.query(`SELECT COUNT(*) AS count FROM users ${where}`, params)
 

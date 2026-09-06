@@ -15,8 +15,8 @@ const storage = multer.diskStorage({
 })
 
 function fileFilter(req, file, cb) {
-  if (!file.mimetype.startsWith('image/')) {
-    return cb(new Error('Chỉ được tải lên file ảnh.'))
+  if (!file.mimetype.startsWith('image/') && !file.mimetype.startsWith('video/')) {
+    return cb(new Error('Chỉ được tải lên file ảnh hoặc video.'))
   }
   cb(null, true)
 }
@@ -24,5 +24,5 @@ function fileFilter(req, file, cb) {
 export const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 300 * 1024 * 1024 }, // 300MB (đủ cho video dài hơn/chất lượng cao hơn)
 })

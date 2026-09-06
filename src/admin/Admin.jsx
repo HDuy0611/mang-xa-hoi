@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { Users, FileText, MessageSquare, Lock, Search, Trash2, Unlock, ChevronLeft, ChevronRight, Flag, AlertTriangle, X, LayoutGrid, ShieldCheck, Eye, Palette, LogOut } from 'lucide-react'
+import { Users, FileText, MessageSquare, Lock, Search, Trash2, Unlock, ChevronLeft, ChevronRight, Flag, AlertTriangle, X, LayoutGrid, ShieldCheck, Eye, Palette, LogOut, Video as VideoIcon } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Avatar from '../components/Avatar'
 import { useAuth } from '../core/AuthContext'
 import { useTheme } from '../core/ThemeContext'
-import { timeAgo } from '../core/posts'
+import { timeAgo, isVideoUrl } from '../core/posts'
 import ModerationModal from './ModerationModal'
 
 const REPORT_STATUS_LABELS = {
@@ -126,19 +126,20 @@ function ActionButton({ icon, label, color, disabled, onClick }) {
   )
 }
 
-function UsersTab() {
+function UsersTab({ onlyLocked = false }) {
   const { user: me } = useAuth()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [lockedOnly, setLockedOnly] = useState(onlyLocked)
   const [busyId, setBusyId] = useState(null)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [lockTarget, setLockTarget] = useState(null)
 
-  const load = useCallback((q, p) => {
+  const load = useCallback((q, p, locked) => {
     setLoading(true)
-    axios.get('/api/admin/users', { params: { ...(q ? { search: q } : {}), page: p } })
+    axios.get('/api/admin/users', { params: { ...(q ? { search: q } : {}), ...(locked ? { locked: true } : {}), page: p } })
       .then(res => {
         setUsers(res.data.users)
         setTotalPages(res.data.totalPages)
@@ -146,12 +147,12 @@ function UsersTab() {
       .finally(() => setLoading(false))
   }, [])
 
-  useEffect(() => { setPage(1) }, [search])
+  useEffect(() => { setPage(1) }, [search, lockedOnly])
 
   useEffect(() => {
-    const timer = setTimeout(() => load(search, page), 300)
+    const timer = setTimeout(() => load(search, page, lockedOnly), 300)
     return () => clearTimeout(timer)
-  }, [search, page, load])
+  }, [search, page, lockedOnly, load])
 
   async function handleUnlock(u) {
     setBusyId(u.id)
@@ -172,8 +173,17 @@ function UsersTab() {
 
   return (
     <div>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
         <SearchInput value={search} onChange={setSearch} placeholder="Tìm theo tên, username, email..." />
+        {lockedOnly && (
+          <span style={{
+            display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600,
+            color: '#c0392b', background: 'rgba(192,57,43,0.12)', padding: '6px 12px', borderRadius: 999,
+          }}>
+            Chỉ tài khoản bị khóa
+            <X size={13} style={{ cursor: 'pointer' }} onClick={() => setLockedOnly(false)} />
+          </span>
+        )}
       </div>
 
       {loading && <p style={{ color: 'var(--text-3)', fontSize: 14, padding: '24px 0' }}>Đang tải...</p>}
@@ -181,7 +191,9 @@ function UsersTab() {
       {!loading && (
         <div className="card" style={{ overflow: 'hidden' }}>
           {users.length === 0 && (
-            <p style={{ color: 'var(--text-3)', fontSize: 14, padding: '24px', textAlign: 'center' }}>Không tìm thấy người dùng nào.</p>
+            <p style={{ color: 'var(--text-3)', fontSize: 14, padding: '24px', textAlign: 'center' }}>
+              {lockedOnly ? 'Không có tài khoản nào bị khóa.' : 'Không tìm thấy người dùng nào.'}
+            </p>
           )}
           {users.map((u, i) => (
             <div key={u.id} style={{
@@ -293,11 +305,20 @@ function PostsTab() {
             }}>
               <div style={{ display: 'flex', gap: 12, minWidth: 0 }}>
                 {p.imageUrl && (
-                  <img
-                    src={p.imageUrl}
-                    alt=""
-                    style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border-2)' }}
-                  />
+                  isVideoUrl(p.imageUrl) ? (
+                    <div style={{
+                      width: 56, height: 56, borderRadius: 8, flexShrink: 0, border: '1px solid var(--border-2)',
+                      background: 'var(--surface-2)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <VideoIcon size={20} color="var(--text-3)" />
+                    </div>
+                  ) : (
+                    <img
+                      src={p.imageUrl}
+                      alt=""
+                      style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border-2)' }}
+                    />
+                  )
                 )}
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 12.5, color: 'var(--text-3)' }}>
@@ -493,15 +514,11 @@ function OverviewTab({ onNavigate }) {
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 28 }}>
-        <StatCard icon={Users} label="Người dùng" value={stats.userCount} tone="accent" onClick={() => onNavigate('users')} />
+        <StatCard icon={Users} label="Người dùng" value={stats.userCount} tone="accent" onClick={() => onNavigate('users', {})} />
         <StatCard icon={FileText} label="Bài viết" value={stats.postCount} tone="accent" onClick={() => onNavigate('posts')} />
         <StatCard icon={MessageSquare} label="Bình luận" value={stats.commentCount} tone="accent" />
       </div>
 
-      {/* Nhóm riêng 2 chỉ số cần admin để ý/xử lý — tô màu theo đúng mức độ khẩn cấp thay vì đồng loạt một màu trang trí như nhóm thống kê ở trên */}
-      <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 10 }}>
-        Cần chú ý
-      </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
         <StatCard
           icon={Lock}
@@ -509,6 +526,7 @@ function OverviewTab({ onNavigate }) {
           value={stats.lockedCount}
           tone={stats.lockedCount > 0 ? 'danger' : 'ok'}
           hint={stats.lockedCount > 0 ? 'Đang có tài khoản bị khóa' : 'Không có tài khoản nào bị khóa'}
+          onClick={() => onNavigate('users', { lockedOnly: true })}
         />
         <StatCard
           icon={Flag}
@@ -516,19 +534,9 @@ function OverviewTab({ onNavigate }) {
           value={stats.pendingReportCount}
           tone={stats.pendingReportCount > 0 ? 'warning' : 'ok'}
           hint={stats.pendingReportCount > 0 ? 'Bấm để xem và xử lý' : 'Đã xử lý hết'}
+          onClick={() => onNavigate('reports')}
         />
       </div>
-      {stats.pendingReportCount > 0 && (
-        <button
-          onClick={() => onNavigate('reports')}
-          style={{
-            marginTop: 16, padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
-            background: 'linear-gradient(135deg,#c1793d,#8b4a28)', color: '#fff', fontSize: 13, fontWeight: 700,
-          }}
-        >
-          Xem báo cáo chờ xử lý →
-        </button>
-      )}
     </div>
   )
 }
@@ -646,6 +654,12 @@ const TAB_TITLES = {
 
 export default function Admin() {
   const [tab, setTab] = useState('overview')
+  const [usersLockedOnly, setUsersLockedOnly] = useState(false)
+
+  function navigate(nextTab, opts = {}) {
+    setTab(nextTab)
+    setUsersLockedOnly(!!opts.lockedOnly)
+  }
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -667,7 +681,7 @@ export default function Admin() {
                 <div style={{ fontSize: 11.5, color: 'var(--text-3)' }}>Hệ thống SUNSET</div>
               </div>
             </div>
-            <SidebarNav active={tab} onChange={setTab} />
+            <SidebarNav active={tab} onChange={navigate} />
             <LogoutButton />
           </aside>
 
@@ -675,8 +689,8 @@ export default function Admin() {
           <div style={{ flex: 1, minWidth: 0, paddingTop: 4 }}>
             <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)', marginBottom: 20 }}>{TAB_TITLES[tab]}</h1>
 
-            {tab === 'overview' && <OverviewTab onNavigate={setTab} />}
-            {tab === 'users' && <UsersTab />}
+            {tab === 'overview' && <OverviewTab onNavigate={navigate} />}
+            {tab === 'users' && <UsersTab onlyLocked={usersLockedOnly} />}
             {tab === 'posts' && <PostsTab />}
             {tab === 'reports' && <ReportsTab />}
             {tab === 'appearance' && <AppearanceTab />}

@@ -228,10 +228,14 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
         )}
       </div>
 
-      {/* Image */}
+      {/* Image / Video */}
       {post.imageUrl && (
         <div style={{ margin: '0 16px 16px', display: 'flex', justifyContent: 'center' }}>
-          <img src={post.imageUrl} alt="" style={{ maxWidth: '100%', maxHeight: 420, width: 'auto', height: 'auto', display: 'block', borderRadius: 13 }} />
+          {post.isVideo ? (
+            <video src={post.imageUrl} controls style={{ maxWidth: '100%', maxHeight: 420, width: 'auto', height: 'auto', display: 'block', borderRadius: 13, background: '#000' }} />
+          ) : (
+            <img src={post.imageUrl} alt="" style={{ maxWidth: '100%', maxHeight: 420, width: 'auto', height: 'auto', display: 'block', borderRadius: 13 }} />
+          )}
         </div>
       )}
       {!post.imageUrl && post.imageBg && (
