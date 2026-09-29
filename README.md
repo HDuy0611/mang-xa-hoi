@@ -1,54 +1,74 @@
 # SUNSET - Mạng xã hội thu nhỏ
 
-Đồ án React + Node.js: xây dựng mạng xã hội thu nhỏ (đăng bài, kết bạn, thông báo, báo cáo vi phạm, trang quản trị...).
+Đồ án xây dựng mạng xã hội thu nhỏ: đăng bài kèm ảnh, thích/bình luận, kết bạn, thông báo thời gian thực, tìm kiếm, lưu bài, báo cáo vi phạm và trang quản trị riêng.
 
-- Frontend: React 19 + Vite
-- Backend: Node.js + Express
-- Database: MySQL
+- Backend: C# ASP.NET Core 9 Web API (Dapper + MySqlConnector, SignalR) - thư mục `backend-c#`
+- Frontend: React 19 + Vite - thư mục gốc (`src/`)
+- Trang quản trị: React + Vite, ứng dụng riêng - thư mục `admin-web`
+- Database: MySQL 8
 
-## Cài đặt và chạy (môi trường phát triển cục bộ)
+## Cần cài trước
 
-### 1. Cơ sở dữ liệu
+| Phần mềm | Dùng cho |
+|---|---|
+| [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0) | Chạy backend C# |
+| [Node.js 20+](https://nodejs.org/) (kèm npm) | Cài thư viện và chạy giao diện React (frontend + admin-web). Backend **không** dùng Node.js |
+| [MySQL 8](https://dev.mysql.com/downloads/mysql/) | Cơ sở dữ liệu |
 
-```
-mysql -u root -p < backend-nodejs/sql/schema.sql
-cd backend-nodejs && node scripts/migrate.js
-```
+## Cài đặt và chạy
 
-### 2. Cấu hình biến môi trường
-
-Sao chép `.env.example` thành `.env` ở cả thư mục gốc và `backend-nodejs/`, điền các giá trị cần thiết (thông tin kết nối MySQL, JWT secret, SMTP nếu muốn gửi email đặt lại mật khẩu thật, Google/Facebook OAuth Client ID nếu muốn dùng đăng nhập mạng xã hội).
-
-### 3. Chạy Backend (cổng 4000)
+### 1. Tạo cơ sở dữ liệu
 
 ```
-cd backend-nodejs
+mysql -u root -p < backend-c#/sql/schema.sql
+```
+
+Lệnh này tạo database `nova_db`, đủ 10 bảng và sẵn một tài khoản quản trị (xem mục 5).
+
+### 2. Cấu hình và chạy Backend (cổng 5080)
+
+Sao chép `backend-c#/appsettings.json.example` thành `backend-c#/appsettings.json`, rồi điền:
+
+- `ConnectionStrings:Default`: thông tin đăng nhập MySQL của bạn, ví dụ `Server=localhost;Database=nova_db;User=root;Password=matkhau;`
+- `Jwt:Secret`: một chuỗi bất kỳ **dài ít nhất 32 ký tự**
+- (không bắt buộc) `Google:ClientId`, `Facebook:AppId/AppSecret` nếu muốn đăng nhập bằng Google/Facebook, `Smtp` nếu muốn gửi email quên mật khẩu
+
+```
+cd backend-c#
+dotnet run --urls http://localhost:5080
+```
+
+Nếu thiếu `appsettings.json` hoặc chưa điền đủ, backend sẽ dừng ngay và báo thiếu cấu hình nào.
+
+### 3. Chạy Frontend (cổng 5173)
+
+Sao chép `.env.example` thành `.env` ở thư mục gốc (giữ nguyên `VITE_REALTIME=signalr` để nhận thông báo tức thời), rồi:
+
+```
 npm install
 npm run dev
 ```
 
-### 4. Chạy Frontend (cổng 5173)
+Mở **http://localhost:5173** và đăng ký một tài khoản để dùng thử.
+
+### 4. Chạy Trang quản trị (cổng 5174)
 
 ```
+cd admin-web
 npm install
 npm run dev
 ```
 
-### 5. Truy cập trang chính
+### 5. Đăng nhập Trang quản trị
 
-Mở trình duyệt tại **http://localhost:5173**, đăng ký một tài khoản người dùng bình thường để dùng thử các chức năng.
-
-### 6. Truy cập trang Quản trị (Admin)
-
-Trang Quản trị dùng địa chỉ đăng nhập riêng, không có liên kết công khai trên giao diện chính. Một tài khoản quản trị mặc định đã được tự động tạo sẵn khi chạy `node scripts/migrate.js` ở bước 1:
+Mở **http://localhost:5174**, đăng nhập bằng tài khoản quản trị tạo sẵn ở bước 1:
 
 - **Tài khoản:** `admin`
 - **Mật khẩu:** `admin`
 
-Mở **http://localhost:5173/admin-portal**, đăng nhập bằng tài khoản trên. Hệ thống sẽ tự chuyển vào trang Quản trị tại `/admin`.
+> Thứ tự chạy: Backend (bước 2) phải chạy trước, vì cả trang chính và trang quản trị đều gọi API qua cùng một backend.
 
-> **Lưu ý thứ tự:** phải chạy xong Backend + Frontend trước (mục 3, 4), vì trang Quản trị dùng chung backend/database với trang chính.
+## Ghi chú
 
-## Triển khai production (Docker)
-
-Dự án đã có sẵn Dockerfile/docker-compose để chạy production (nginx + Node + MySQL trong container). Xem hướng dẫn đầy đủ tại [`DEPLOY.md`](./DEPLOY.md).
+- Ảnh người dùng tải lên được lưu trong `backend-c#/uploads` (đổi được qua `Uploads:Path` trong `appsettings.json`).
+- Tài khoản quản trị không đăng nhập được ở trang chính, chỉ đăng nhập được ở trang quản trị.

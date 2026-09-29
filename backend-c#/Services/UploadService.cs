@@ -1,7 +1,15 @@
 namespace NovaApi.Services;
 
-public class UploadService(IWebHostEnvironment env)
+public class UploadService(IWebHostEnvironment env, IConfiguration configuration)
 {
+    // Mặc định lưu trong backend-c#/uploads; đổi được qua Uploads:Path (đường dẫn tương đối tính từ thư mục backend-c#)
+    public static string ResolveUploadsPath(IWebHostEnvironment env, IConfiguration configuration)
+    {
+        var path = Path.GetFullPath(Path.Combine(env.ContentRootPath, configuration["Uploads:Path"] ?? "uploads"));
+        Directory.CreateDirectory(path);
+        return path;
+    }
+
     public class UploadResult
     {
         public bool Success { get; init; }
@@ -17,8 +25,7 @@ public class UploadService(IWebHostEnvironment env)
         if (!file.ContentType.StartsWith("image/"))
             return new UploadResult { Success = false, Error = "Chỉ được tải lên file ảnh." };
 
-        var uploadsPath = Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "backend-nodejs", "uploads"));
-        Directory.CreateDirectory(uploadsPath);
+        var uploadsPath = ResolveUploadsPath(env, configuration);
 
         var ext = Path.GetExtension(file.FileName);
         var uniqueName = $"{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}-{Random.Shared.Next(1_000_000_000)}{ext}";

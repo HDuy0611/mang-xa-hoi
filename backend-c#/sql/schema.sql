@@ -1,7 +1,5 @@
--- backend-c# dùng chung 1 database MySQL thật (nova_db) với backend-nodejs.
--- File này chỉ là bản sao tài liệu hoá của schema thật — nguồn xác thực duy nhất
--- vẫn là backend-nodejs/sql/schema.sql + backend-nodejs/scripts/migrate.js (backend-c#
--- không có migration runner riêng). Copy lại đây để không còn lỗi thời/thiếu bảng.
+-- Tạo database nova_db cùng 10 bảng và tài khoản quản trị mặc định.
+-- Chạy: mysql -u root -p < backend-c#/sql/schema.sql (chạy lại nhiều lần vẫn an toàn)
 
 CREATE DATABASE IF NOT EXISTS nova_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE nova_db;
@@ -132,3 +130,7 @@ CREATE TABLE IF NOT EXISTS reports (
   FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (resolved_by) REFERENCES users(id) ON DELETE SET NULL
 );
+
+-- Tài khoản quản trị mặc định (tài khoản: admin / mật khẩu: admin) — INSERT IGNORE nên chạy lại file nhiều lần không bị trùng
+INSERT IGNORE INTO users (name, username, email, password_hash, role)
+VALUES ('Quản trị viên', 'admin', 'admin', '$2b$10$ZlylUmyGWsio5HxRstvk4eyMXmsYm8yr2mYp7uD4iCqfWdholmDTC', 'admin');

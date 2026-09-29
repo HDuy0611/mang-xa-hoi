@@ -9,6 +9,14 @@ using NovaApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Báo lỗi rõ ràng ngay lúc khởi động thay vì để mọi API trả 500 khi chưa cấu hình
+var jwtSecret = builder.Configuration["Jwt:Secret"];
+if (string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("Default")) || string.IsNullOrWhiteSpace(jwtSecret))
+    throw new InvalidOperationException(
+        "Thiếu cấu hình: hãy sao chép appsettings.json.example thành appsettings.json rồi điền ConnectionStrings:Default và Jwt:Secret (xem README.md).");
+if (Encoding.UTF8.GetByteCount(jwtSecret) < 32)
+    throw new InvalidOperationException("Jwt:Secret phải dài ít nhất 32 ký tự.");
+
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.Limits.MaxRequestBodySize = null;
@@ -35,7 +43,6 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod());
 });
 
-var jwtSecret = builder.Configuration["Jwt:Secret"]!;
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -69,8 +76,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-var uploadsPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "backend-nodejs", "uploads"));
-Directory.CreateDirectory(uploadsPath);
+var uploadsPath = UploadService.ResolveUploadsPath(builder.Environment, builder.Configuration);
 
 app.UseCors();
 
