@@ -13,8 +13,11 @@ dist-ssr
 *.local
 .env
 
-# Backend C# (đóng băng, không đăng lên git)
-backend-c#/
+backend-c#/bin/
+backend-c#/obj/
+backend-c#/uploads/
+backend-c#/appsettings.json
+backend-c#/*.user
 
 # Editor directories and files
 .vscode/*

@@ -13,9 +13,6 @@ export function useSocialAuth() {
   const [socialError, setSocialError] = useState('')
   const [socialLoading, setSocialLoading] = useState(false)
 
-  // Tải sẵn 2 SDK ngay khi trang mở, để lúc người dùng bấm nút thì popup mở
-  // ngay lập tức (window.open chỉ được trình duyệt cho phép trong khoảng thời
-  // gian ngắn ngay sau cú click thật, nếu phải chờ tải script trước sẽ dễ bị chặn)
   useEffect(() => {
     if (GOOGLE_CLIENT_ID) loadGoogleScript().catch(() => {})
     if (FACEBOOK_APP_ID) loadFacebookScript(FACEBOOK_APP_ID).catch(() => {})

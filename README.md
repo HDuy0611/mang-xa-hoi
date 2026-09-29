@@ -48,3 +48,7 @@ Trang Quản trị dùng địa chỉ đăng nhập riêng, không có liên k�
 Mở **http://localhost:5173/admin-portal**, đăng nhập bằng tài khoản trên. Hệ thống sẽ tự chuyển vào trang Quản trị tại `/admin`.
 
 > **Lưu ý thứ tự:** phải chạy xong Backend + Frontend trước (mục 3, 4), vì trang Quản trị dùng chung backend/database với trang chính.
+
+## Triển khai production (Docker)
+
+Dự án đã có sẵn Dockerfile/docker-compose để chạy production (nginx + Node + MySQL trong container). Xem hướng dẫn đầy đủ tại [`DEPLOY.md`](./DEPLOY.md).

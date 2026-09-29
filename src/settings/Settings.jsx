@@ -465,7 +465,7 @@ export default function Settings() {
   }
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div className="page-shell" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 60, minHeight: '100vh' }}>
 

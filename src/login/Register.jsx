@@ -30,7 +30,12 @@ export default function Register() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{
+      display: 'flex', minHeight: '100vh', background: 'var(--bg)',
+      '--bg': '#1C1C1D', '--surface': '#262627', '--surface-2': '#303032',
+      '--border': 'rgba(255,255,255,0.09)', '--text': '#F2F2F2', '--text-2': '#A3A3A3',
+      '--text-3': '#6E6E6E', '--overlay-rgb': '255,255,255', '--shadow': '0 4px 24px rgba(0,0,0,0.5)',
+    }}>
       <AuthLeft />
 
       {/* Right panel */}

@@ -2,11 +2,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { flushSync } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { Users, FileText, MessageSquare, Lock, Search, Trash2, Unlock, ChevronLeft, ChevronRight, Flag, AlertTriangle, X, LayoutGrid, ShieldCheck, Eye, Palette, LogOut, Video as VideoIcon } from 'lucide-react'
-import Navbar from '../components/Navbar'
+import { Users, FileText, MessageSquare, Lock, Search, Trash2, Unlock, ChevronLeft, ChevronRight, Flag, AlertTriangle, X, LayoutGrid, ShieldCheck, Eye, LogOut, Video as VideoIcon } from 'lucide-react'
+import AdminHeader from '../components/AdminHeader'
 import Avatar from '../components/Avatar'
 import { useAuth } from '../core/AuthContext'
-import { useTheme } from '../core/ThemeContext'
 import { timeAgo, isVideoUrl } from '../core/posts'
 import ModerationModal from './ModerationModal'
 
@@ -21,7 +20,6 @@ const NAV_ITEMS = [
   { key: 'users', label: 'Người dùng', icon: Users },
   { key: 'posts', label: 'Bài viết', icon: FileText },
   { key: 'reports', label: 'Báo cáo', icon: Flag },
-  { key: 'appearance', label: 'Giao diện', icon: Palette },
 ]
 
 function Pagination({ page, totalPages, onChange }) {
@@ -91,7 +89,7 @@ function StatCard({ icon: Icon, label, value, tone = 'accent', hint, onClick }) 
 
 function SearchInput({ value, onChange, placeholder }) {
   return (
-    <div style={{ position: 'relative', maxWidth: 320 }}>
+    <div style={{ position: 'relative', width: 240, maxWidth: '100%' }}>
       <Search size={15} color="var(--text-3)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
       <input
         value={value}
@@ -174,7 +172,7 @@ function UsersTab({ onlyLocked = false }) {
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <SearchInput value={search} onChange={setSearch} placeholder="Tìm theo tên, username, email..." />
+        <SearchInput value={search} onChange={setSearch} placeholder="Tìm theo tên, username, email" />
         {lockedOnly && (
           <span style={{
             display: 'flex', alignItems: 'center', gap: 6, fontSize: 12.5, fontWeight: 600,
@@ -288,7 +286,7 @@ function PostsTab() {
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
-        <SearchInput value={search} onChange={setSearch} placeholder="Tìm theo nội dung, tác giả..." />
+        <SearchInput value={search} onChange={setSearch} placeholder="Tìm theo nội dung, tác giả" />
       </div>
 
       {loading && <p style={{ color: 'var(--text-3)', fontSize: 14, padding: '24px 0' }}>Đang tải...</p>}
@@ -541,61 +539,13 @@ function OverviewTab({ onNavigate }) {
   )
 }
 
-function Toggle({ on, onClick }) {
-  return (
-    <div onClick={onClick} style={{
-      width: 38, height: 21, borderRadius: 12, cursor: 'pointer', flexShrink: 0,
-      background: on ? 'linear-gradient(145deg,#c1793d,#8b4a28)' : 'rgba(var(--overlay-rgb),0.15)',
-      position: 'relative', transition: 'background 0.3s ease',
-      boxShadow: on ? '0 2px 8px rgba(193,121,61,0.4)' : 'none',
-    }}>
-      <div style={{
-        position: 'absolute', top: 3, left: on ? 20 : 3,
-        width: 15, height: 15, borderRadius: '50%', background: '#fff',
-        transition: 'left 0.25s ease',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-      }} />
-    </div>
-  )
-}
-
-function AppearanceTab() {
-  const { theme, setTheme } = useTheme()
-  const [busy, setBusy] = useState(false)
-  const isDark = theme === 'dark'
-
-  async function toggleTheme() {
-    const next = isDark ? 'light' : 'dark'
-    setTheme(next)
-    setBusy(true)
-    try {
-      const res = await axios.get('/api/settings')
-      await axios.put('/api/settings', { ...res.data.settings, theme: next })
-    } catch {
-      // giữ nguyên giao diện đã đổi ở phía client dù lưu server thất bại
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: '1px solid rgba(var(--overlay-rgb),0.08)', opacity: busy ? 0.6 : 1 }}>
-      <div>
-        <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Chế độ tối</p>
-        <p style={{ fontSize: 12.5, color: 'var(--text-3)', marginTop: 3 }}>Đổi giao diện SUNSET sang nền đen, áp dụng ngay và nhớ cho lần đăng nhập sau</p>
-      </div>
-      <Toggle on={isDark} onClick={busy ? undefined : toggleTheme} />
-    </div>
-  )
-}
-
 function LogoutButton() {
   const { logout } = useAuth()
   const navigate = useNavigate()
 
   function handleLogout() {
     flushSync(() => { logout() })
-    navigate('/admin-portal')
+    navigate('/')
   }
 
   return (
@@ -649,7 +599,6 @@ const TAB_TITLES = {
   users: 'Người dùng',
   posts: 'Bài viết',
   reports: 'Báo cáo',
-  appearance: 'Giao diện',
 }
 
 export default function Admin() {
@@ -663,11 +612,11 @@ export default function Admin() {
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
-      <Navbar />
+      <AdminHeader />
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 82, minHeight: '100vh' }}>
         <div style={{ width: '100%', maxWidth: 1040, padding: '0 24px 40px', display: 'flex', gap: 32, alignItems: 'flex-start' }}>
 
-          {/* Sidebar — cố định bên trái, tách biệt hẳn với thanh pill điều hướng mạng xã hội phía trên, đúng kiểu một bảng điều khiển quản trị */}
+          {/* Sidebar — cố định bên trái, điều hướng riêng của app admin (thanh đầu trang chỉ còn logo + avatar) */}
           <aside style={{ width: 210, flexShrink: 0, position: 'sticky', top: 82 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '4px 4px 18px' }}>
               <div style={{
@@ -693,7 +642,6 @@ export default function Admin() {
             {tab === 'users' && <UsersTab onlyLocked={usersLockedOnly} />}
             {tab === 'posts' && <PostsTab />}
             {tab === 'reports' && <ReportsTab />}
-            {tab === 'appearance' && <AppearanceTab />}
           </div>
         </div>
       </div>

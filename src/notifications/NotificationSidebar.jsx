@@ -80,7 +80,7 @@ function FilterCard({ active, onChange, onMarkAllRead }) {
 
 export default function NotificationSidebar({ active, onChange, onMarkAllRead }) {
   return (
-    <div style={{ width: 270, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div className="notif-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <InfoCard />
       <FilterCard active={active} onChange={onChange} onMarkAllRead={onMarkAllRead} />
     </div>

@@ -1,0 +1,73 @@
+@NovaApi_HostAddress = http://localhost:5080
+
+POST {{NovaApi_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "123456"
+}
+
+### Đăng nhập user thường — đặt tên "login" để request dưới tự lấy token, không cần dán tay
+# @name login
+POST {{NovaApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "123456"
+}
+
+### Gửi báo cáo vi phạm — token tự lấy từ response của request "login" ở trên
+@token = {{login.response.body.$.token}}
+
+POST {{NovaApi_HostAddress}}/api/reports
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "targetType": "user",
+  "targetId": 1,
+  "reason": "Tài khoản giả mạo"
+}
+
+### Đăng nhập quản trị (tài khoản mặc định admin/admin do backend-nodejs/scripts/migrate.js seed)
+# @name adminLogin
+POST {{NovaApi_HostAddress}}/api/admin/login
+Content-Type: application/json
+
+{
+  "email": "admin",
+  "password": "admin"
+}
+
+### Thống kê tổng quan — token tự lấy từ response của request "adminLogin" ở trên
+@adminToken = {{adminLogin.response.body.$.token}}
+
+GET {{NovaApi_HostAddress}}/api/admin/stats
+Authorization: Bearer {{adminToken}}
+
+### Danh sách người dùng (tìm kiếm + phân trang)
+GET {{NovaApi_HostAddress}}/api/admin/users?search=&page=1
+Authorization: Bearer {{adminToken}}
+
+### Khóa tài khoản test của chính mình (id 52, tài khoản "Test User" đăng ký ở trên — an toàn để thử, không phải tài khoản thật ai khác). days bỏ trống = khóa vĩnh viễn
+PATCH {{NovaApi_HostAddress}}/api/admin/users/52/lock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "reason": "Spam bài viết",
+  "days": 7
+}
+
+### Mở khóa lại tài khoản test
+PATCH {{NovaApi_HostAddress}}/api/admin/users/52/unlock
+Authorization: Bearer {{adminToken}}
+
+### Hàng chờ báo cáo (status: pending/resolved/dismissed, bỏ trống = tất cả)
+GET {{NovaApi_HostAddress}}/api/admin/reports?status=pending&page=1
+Authorization: Bearer {{adminToken}}
+
+###

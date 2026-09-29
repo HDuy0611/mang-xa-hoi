@@ -1,8 +1,11 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import axios from 'axios'
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, BadgeCheck, Trash2, Flag } from 'lucide-react'
+import { Heart, MessageCircle, Bookmark, MoreHorizontal, BadgeCheck, Trash2, Flag, Share2, Check } from 'lucide-react'
 import { useAuth } from '../core/AuthContext'
+import { useCopyLink } from '../core/useCopyLink'
 import CommentsModal from './CommentsModal'
+import LikesModal from './LikesModal'
 import ReportModal from './ReportModal'
 
 const CARD_BG = 'var(--surface)'
@@ -13,7 +16,7 @@ function fmt(n) {
   return n
 }
 
-function ActionBtn({ icon, label, active, activeColor, activeBg, onClick }) {
+function ActionBtn({ icon, label, active, activeColor, activeBg, onClick, title }) {
   const [hov, setHov] = useState(false)
   const col = active ? activeColor : hov ? 'var(--text)' : 'var(--text-2)'
   const bg = hov ? (activeBg || 'rgba(var(--overlay-rgb),0.05)') : 'transparent'
@@ -21,13 +24,14 @@ function ActionBtn({ icon, label, active, activeColor, activeBg, onClick }) {
   return (
     <button
       onClick={onClick}
+      title={title}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
         display: 'flex', alignItems: 'center', gap: 6,
         padding: label ? '7px 12px' : '7px 9px',
         borderRadius: 9, background: active ? activeBg : bg,
-        border: 'none', cursor: 'pointer',
+        border: 'none', cursor: onClick ? 'pointer' : 'default',
         color: col, fontSize: 13, fontWeight: 500,
         transition: 'all 0.18s ease',
       }}
@@ -50,6 +54,8 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
 
   const [commentsOpen, setCommentsOpen] = useState(false)
   const [commentCount, setCommentCount] = useState(post.comments)
+  const [likesOpen, setLikesOpen] = useState(false)
+  const { copied, copy } = useCopyLink()
 
   const isOwner = user?.id === post.authorId
 
@@ -108,7 +114,7 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', padding: '18px 20px 14px', gap: 12 }}>
         {/* Avatar with gradient ring */}
-        <div style={{
+        <Link to={`/profile/${post.username}`} style={{
           borderRadius: '50%', padding: 2.5,
           background: post.avatarRing || 'linear-gradient(135deg,#c1793d,#8b4a28)',
           flexShrink: 0,
@@ -130,10 +136,10 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
                 : post.initials}
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Author info */}
-        <div style={{ flex: 1 }}>
+        <Link to={`/profile/${post.username}`} style={{ flex: 1, textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{post.author}</span>
             {post.verified && <BadgeCheck size={15} style={{ color: '#d4a574' }} />}
@@ -143,9 +149,9 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
             <span style={{ fontSize: 12, color: 'var(--text-3)' }}>·</span>
             <span style={{ fontSize: 12, color: 'var(--text-3)' }}>{post.time}</span>
           </div>
-        </div>
+        </Link>
 
-        {user && (
+        {user && !post.isDeleted && (isOwner || !post.authorIsAdmin) && (
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setMenuOpen(o => !o)}
@@ -169,7 +175,7 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
                 <div style={{
                   position: 'absolute', top: '100%', right: 0, marginTop: 6, zIndex: 11,
                   background: 'var(--surface)', border: `1px solid ${BORDER}`, borderRadius: 12,
-                  padding: 6, minWidth: 160, boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                  padding: 6, width: 'max-content', maxWidth: 'calc(100vw - 32px)', boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
                 }}>
                   {isOwner ? (
                     <button
@@ -259,27 +265,44 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
         borderTop: '1px solid rgba(var(--overlay-rgb),0.07)',
         gap: 2,
       }}>
-        <ActionBtn
-          icon={<Heart size={17} fill={liked ? '#8b4a28' : 'none'} strokeWidth={liked ? 0 : 1.8} color={liked ? '#8b4a28' : undefined} />}
-          label={fmt(likes)}
-          active={liked}
-          activeColor="#8b4a28"
-          activeBg="rgba(139,74,40,0.1)"
-          onClick={handleLike}
-        />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <ActionBtn
+            icon={<Heart size={17} fill={liked ? '#8b4a28' : 'none'} strokeWidth={liked ? 0 : 1.8} color={liked ? '#8b4a28' : undefined} />}
+            active={liked}
+            activeColor="#8b4a28"
+            activeBg="rgba(139,74,40,0.1)"
+            onClick={post.isDeleted ? undefined : handleLike}
+          />
+          {likes > 0 ? (
+            <button
+              onClick={() => setLikesOpen(true)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                padding: '7px 10px 7px 0', margin: 0,
+                fontSize: 13, fontWeight: 500, color: 'var(--text-2)',
+              }}
+            >
+              {fmt(likes)}
+            </button>
+          ) : (
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-2)', padding: '7px 10px 7px 0' }}>{fmt(likes)}</span>
+          )}
+        </div>
         <ActionBtn
           icon={<MessageCircle size={17} strokeWidth={1.8} />}
           label={fmt(commentCount)}
           onClick={() => setCommentsOpen(true)}
         />
-        {post.allowSharing && (
-          <ActionBtn
-            icon={<Share2 size={17} strokeWidth={1.8} />}
-            label={fmt(post.shares)}
-          />
-        )}
 
         <div style={{ flex: 1 }} />
+
+        {!post.isDeleted && post.allowSharing !== false && (
+          <ActionBtn
+            icon={copied ? <Check size={17} color="#4ade80" /> : <Share2 size={17} strokeWidth={1.8} />}
+            title={copied ? 'Đã sao chép liên kết!' : 'Sao chép liên kết bài viết'}
+            onClick={() => copy(`${window.location.origin}/post/${post.id}`)}
+          />
+        )}
 
         <ActionBtn
           icon={<Bookmark size={17} fill={saved ? '#d4a574' : 'none'} strokeWidth={saved ? 0 : 1.8} color={saved ? '#d4a574' : undefined} />}
@@ -297,6 +320,10 @@ export default function PostCard({ post, onDeleted, onBookmarkChange }) {
           onCommentAdded={() => setCommentCount(c => c + 1)}
           onCommentDeleted={() => setCommentCount(c => c - 1)}
         />
+      )}
+
+      {likesOpen && (
+        <LikesModal post={post} onClose={() => setLikesOpen(false)} />
       )}
 
       {reportOpen && (

@@ -4,7 +4,7 @@ import axios from 'axios'
 import {
   ArrowLeft, ChevronDown, ChevronRight, Globe,
   Image as ImageIcon, Video, Send,
-  MessageCircle, Share2,
+  MessageCircle,
 } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Avatar from '../components/Avatar'
@@ -21,24 +21,6 @@ const commentOptions = [
   { value: 'friends', label: 'Bạn bè' },
   { value: 'nobody', label: 'Không ai cả' },
 ]
-
-function Toggle({ on, onClick }) {
-  return (
-    <div onClick={onClick} style={{
-      width: 38, height: 21, borderRadius: 12, cursor: 'pointer', flexShrink: 0,
-      background: on ? 'linear-gradient(135deg,#c1793d,#8b4a28)' : 'rgba(var(--overlay-rgb),0.15)',
-      position: 'relative', transition: 'background 0.3s ease',
-      boxShadow: on ? '0 2px 8px rgba(193,121,61,0.4)' : 'none',
-    }}>
-      <div style={{
-        position: 'absolute', top: 3, left: on ? 20 : 3,
-        width: 15, height: 15, borderRadius: '50%', background: '#fff',
-        transition: 'left 0.25s ease',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-      }} />
-    </div>
-  )
-}
 
 function OptionRow({ icon: Icon, label, trailing, onClick }) {
   return (
@@ -66,7 +48,6 @@ export default function CreatePost() {
   const fileInputRef = useRef(null)
   const [audience, setAudience] = useState('Công khai')
   const [audienceOpen, setAudienceOpen] = useState(false)
-  const [allowSharing, setAllowSharing] = useState(true)
   const [commentPermission, setCommentPermission] = useState('everyone')
   const [commentMenuOpen, setCommentMenuOpen] = useState(false)
   const [posting, setPosting] = useState(false)
@@ -81,10 +62,6 @@ export default function CreatePost() {
 
     if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
       setError('Chỉ hỗ trợ tệp ảnh hoặc video.')
-      return
-    }
-    if (file.size > 300 * 1024 * 1024) {
-      setError('Tệp vượt quá 300MB, vui lòng chọn tệp nhỏ hơn.')
       return
     }
 
@@ -109,7 +86,6 @@ export default function CreatePost() {
       formData.append('content', text.trim())
       if (imageFile) formData.append('image', imageFile)
       formData.append('commentPermission', commentPermission)
-      formData.append('allowSharing', String(allowSharing))
 
       await axios.post('/api/posts', formData, {
         onUploadProgress: imageFile
@@ -125,7 +101,7 @@ export default function CreatePost() {
   }
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div className="page-shell" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 60, minHeight: '100vh' }}>
 
@@ -366,12 +342,6 @@ export default function CreatePost() {
                     </div>
                   </>
                 )}
-                <div style={{ borderTop: `1px solid ${BORDER}` }} />
-                <OptionRow
-                  icon={Share2}
-                  label="Cho phép chia sẻ"
-                  trailing={<Toggle on={allowSharing} onClick={() => setAllowSharing(v => !v)} />}
-                />
               </div>
             </div>
           </div>

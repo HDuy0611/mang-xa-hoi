@@ -12,7 +12,6 @@ export default function AdminLogin() {
   const navigate = useNavigate()
   const { login, user } = useAuth()
 
-  // Đã đăng nhập sẵn bằng đúng tài khoản admin (ví dụ mở lại /admin-portal ở tab khác) — vào thẳng, không bắt gõ lại.
   useEffect(() => {
     if (user?.role === 'admin') navigate('/admin', { replace: true })
   }, [user, navigate])

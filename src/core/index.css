@@ -145,3 +145,27 @@ input:-webkit-autofill:focus {
   50%     { opacity: 0.5; }
 }
 .online-dot { animation: glow-pulse 2s infinite; }
+
+/* === Responsive (mobile ~768px trở xuống) === */
+.navbar-grid { grid-template-columns: calc(50% - 320px) 640px calc(50% - 320px); }
+.home-grid { grid-template-columns: 280px 1fr 280px; }
+.notif-sidebar { width: 270px; flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  .navbar-grid { grid-template-columns: auto 1fr auto !important; padding: 0 14px !important; }
+  .navbar-search { display: none; }
+  .navbar-center {
+    position: fixed; top: auto; bottom: 0; left: 0; right: 0;
+    background: var(--nav-bg); border-top: 1px solid var(--nav-border);
+    backdrop-filter: blur(20px); padding: 8px 10px; z-index: 100;
+    overflow-x: auto; justify-content: flex-start !important;
+  }
+  .nav-label { display: none; }
+
+  .home-grid { grid-template-columns: 1fr !important; padding: 70px 12px 20px !important; }
+  .home-side-panel { display: none; }
+
+  .notif-sidebar { display: none; }
+
+  .page-shell { padding-bottom: 70px; }
+}

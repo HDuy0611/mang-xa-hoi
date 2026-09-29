@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Calendar, Link as LinkIcon, UserPlus, UserCheck, Clock, Ban, Check, Copy, Flag } from 'lucide-react'
+import { MapPin, Calendar, Link as LinkIcon, UserPlus, UserCheck, Clock, Ban, Check, Flag, Share2 } from 'lucide-react'
 import coverImg from '../assets/images/929ef642-a5f0-4c9b-ba85-bd027a3f6d33.png'
 import ReportModal from '../components/ReportModal'
+import { useCopyLink } from '../core/useCopyLink'
 
 const CARD_BG = 'var(--surface)'
 const BORDER = 'rgba(var(--overlay-rgb),0.07)'
@@ -125,17 +126,10 @@ function FriendActionButton({ relationship, blockedByMe, onFriendAction }) {
 
 export default function ProfileHeader({ user, isOwnProfile, relationship, blockedByMe, onFriendAction }) {
   const [hovEdit, setHovEdit] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [hovShare, setHovShare] = useState(false)
   const [reportOpen, setReportOpen] = useState(false)
   const navigate = useNavigate()
-
-  function handleShare() {
-    const url = `${window.location.origin}/profile/${user.username}`
-    navigator.clipboard?.writeText(url).then(() => {
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    })
-  }
+  const { copied, copy } = useCopyLink()
 
   return (
     <div style={{ background: CARD_BG, border: `1px solid ${BORDER}`, borderRadius: 18, overflow: 'hidden', marginBottom: 20 }}>
@@ -196,20 +190,23 @@ export default function ProfileHeader({ user, isOwnProfile, relationship, blocke
               <FriendActionButton relationship={relationship} blockedByMe={blockedByMe} onFriendAction={onFriendAction} />
             )}
             <button
-              onClick={handleShare}
+              onClick={() => copy(`${window.location.origin}/profile/${user.username}`)}
+              onMouseEnter={() => setHovShare(true)}
+              onMouseLeave={() => setHovShare(false)}
+              title="Sao chép liên kết trang cá nhân"
               style={{
                 display: 'flex', alignItems: 'center', gap: 7,
-                fontSize: 13, fontWeight: 700, padding: '10px 20px', borderRadius: 11,
-                cursor: 'pointer',
-                background: copied ? 'linear-gradient(135deg,#6f8f4f,#5a7540)' : 'rgba(var(--overlay-rgb),0.05)',
-                color: copied ? '#fff' : 'var(--text)',
-                border: copied ? 'none' : '1px solid rgba(var(--overlay-rgb),0.14)',
+                fontSize: 13, fontWeight: 700, padding: '10px 14px', borderRadius: 11,
+                cursor: 'pointer', color: copied ? '#4ade80' : 'var(--text)',
+                background: hovShare ? 'rgba(var(--overlay-rgb),0.09)' : 'rgba(var(--overlay-rgb),0.05)',
+                border: '1px solid rgba(var(--overlay-rgb),0.14)',
                 transition: 'all 0.18s ease',
               }}
             >
-              {copied ? <><Check size={14} /> Đã sao chép</> : <><Copy size={14} /> Chia sẻ trang cá nhân</>}
+              {copied ? <Check size={15} /> : <Share2 size={15} />}
+              {copied ? 'Đã sao chép' : 'Chia sẻ'}
             </button>
-            {!isOwnProfile && (
+            {!isOwnProfile && !user.isAdmin && (
               <button
                 onClick={() => setReportOpen(true)}
                 style={{

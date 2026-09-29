@@ -6,8 +6,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      '/api': 'http://localhost:4000',
-      '/uploads': 'http://localhost:4000',
+      '/api': 'http://localhost:5080',
+      '/uploads': 'http://localhost:5080',
+      '/hubs': { target: 'http://localhost:5080', ws: true },
     },
     watch: {
       ignored: ['**/backend-nodejs/**', '**/backend-c#/**'],

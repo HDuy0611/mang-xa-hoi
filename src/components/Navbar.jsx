@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { Plus } from 'lucide-react'
 import { useAuth } from '../core/AuthContext'
+import { useSocket } from '../core/SocketContext'
 import Avatar from './Avatar'
 import SearchBox from './SearchBox'
 
@@ -18,10 +19,7 @@ function NavPill({ items, activePath, unreadCount, onNavigate }) {
   const containerRef = useRef(null)
   const itemRefs = useRef({})
   const [indicator, setIndicator] = useState({ left: 0, width: 0, ready: false })
-  const itemPadding = items.length > 5 ? '12px 18px' : '12px 32px'
-  // Ít mục (ví dụ navbar rút gọn của admin chỉ còn 2 mục) thì để pill co theo đúng nội dung
-  // thay vì kéo giãn hết 640px với justify-content: space-between — tránh khoảng trắng rỗng vô lý ở giữa
-  const isCompact = items.length <= 2
+  const itemPadding = '12px 32px'
 
   useLayoutEffect(() => {
     const el = itemRefs.current[activePath]
@@ -38,9 +36,9 @@ function NavPill({ items, activePath, unreadCount, onNavigate }) {
   return (
     <div ref={containerRef} style={{
       position: 'relative',
-      width: isCompact ? 'auto' : '100%',
-      maxWidth: isCompact ? 'none' : 640,
-      display: 'flex', alignItems: 'center', justifyContent: isCompact ? 'center' : 'space-between', gap: isCompact ? 4 : 6,
+      width: '100%',
+      maxWidth: 640,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6,
       background: 'var(--nav-pill-bg)',
       border: '1px solid var(--nav-pill-border)',
       borderRadius: 999, padding: '5px 8px',
@@ -55,6 +53,7 @@ function NavPill({ items, activePath, unreadCount, onNavigate }) {
 
       {items.map(({ label, path, unreadKey }) => {
         const active = path === activePath
+        const badgeCount = unreadKey ? unreadCount : 0
         return (
           <button
             key={path}
@@ -72,12 +71,12 @@ function NavPill({ items, activePath, unreadCount, onNavigate }) {
             onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'var(--nav-text-dim)' }}
           >
             {label}
-            {unreadKey && unreadCount > 0 && (
+            {badgeCount > 0 && (
               <span style={{
                 minWidth: 16, height: 16, padding: '0 4px', borderRadius: 999,
                 background: '#8b4a28', color: '#fff', fontSize: 10, fontWeight: 700,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>{unreadCount}</span>
+              }}>{badgeCount}</span>
             )}
           </button>
         )
@@ -90,26 +89,32 @@ export default function Navbar() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user } = useAuth()
+  const { socket } = useSocket()
   const [unreadCount, setUnreadCount] = useState(0)
 
-  const isAdmin = user?.role === 'admin'
-
-  // Admin là tài khoản quản trị riêng, không dùng các mục mạng xã hội — chỉ giữ Trang chủ + Quản trị
-  const items = isAdmin
-    ? [navItems[0], { label: 'Quản trị', path: '/admin' }]
-    : navItems
+  function fetchUnread() {
+    axios.get('/api/notifications/unread-count')
+      .then(res => setUnreadCount(res.data.count))
+      .catch(() => {})
+  }
 
   useEffect(() => {
-    if (isAdmin) return
-    function fetchUnread() {
-      axios.get('/api/notifications/unread-count')
-        .then(res => setUnreadCount(res.data.count))
-        .catch(() => {})
-    }
     fetchUnread()
-    const interval = setInterval(fetchUnread, 30000)
+    const interval = setInterval(fetchUnread, 90000)
     return () => clearInterval(interval)
-  }, [location.pathname, isAdmin])
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!socket) return
+    function onNotification() { setUnreadCount(c => c + 1) }
+    function onReconnect() { fetchUnread() }
+    socket.on('notification:new', onNotification)
+    socket.on('connect', onReconnect)
+    return () => {
+      socket.off('notification:new', onNotification)
+      socket.off('connect', onReconnect)
+    }
+  }, [socket])
 
   return (
     <nav style={{
@@ -121,8 +126,8 @@ export default function Navbar() {
       transition: 'background 0.25s ease, border-color 0.25s ease',
       display: 'flex', alignItems: 'center',
     }}>
-      {/* Cột giữa cố định 640px (đúng bằng maxWidth của nav pill/feed) — 2 cột ngoài tự co giãn theo cửa sổ nhưng luôn kết thúc/bắt đầu sát mép pill, không cần biết trước bề rộng màn hình */}
-      <div style={{ width: '100%', display: 'grid', gridTemplateColumns: 'calc(50% - 320px) 640px calc(50% - 320px)', alignItems: 'center', padding: '0 20px' }}>
+      {/* Cột giữa cố định 640px (đúng bằng maxWidth của nav pill/feed) — 2 cột ngoài tự co giãn theo cửa sổ nhưng luôn kết thúc/bắt đầu sát mép pill, không cần biết trước bề rộng màn hình. Ở mobile (≤768px), class .navbar-grid trong index.css thu 2 cột ngoài lại còn auto, và .navbar-center chuyển hẳn thành thanh cố định đáy màn hình */}
+      <div className="navbar-grid" style={{ width: '100%', display: 'grid', alignItems: 'center', padding: '0 20px' }}>
 
         {/* Cột trái: Logo (dính mép trái) + Search — giữ kích thước gọn như thiết kế gốc, không kéo giãn */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 18, minWidth: 0 }}>
@@ -142,13 +147,15 @@ export default function Navbar() {
             </svg>
           </div>
 
-          <SearchBox width={222} />
+          <div className="navbar-search">
+            <SearchBox width={222} />
+          </div>
         </div>
 
         {/* Cột giữa: nav pill — giữ nguyên, không đổi */}
-        <div style={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+        <div className="navbar-center" style={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
           <NavPill
-            items={items}
+            items={navItems}
             activePath={location.pathname}
             unreadCount={unreadCount}
             onNavigate={navigate}
@@ -168,7 +175,7 @@ export default function Navbar() {
             }}
           >
             <Plus size={15} strokeWidth={2.5} />
-            Tạo bài viết
+            <span className="nav-label">Tạo bài viết</span>
           </button>
 
           <div onClick={() => navigate('/profile')} style={{

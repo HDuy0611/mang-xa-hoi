@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import axios from 'axios'
 import './index.css'
 import { AuthProvider, useAuth } from './AuthContext'
+import { SocketProvider } from './SocketContext'
 import { ThemeProvider } from './ThemeContext'
 import { mapPost } from './posts'
 import Navbar from '../components/Navbar'
@@ -19,11 +20,9 @@ import Friends from '../friends/Friends'
 import Bookmarks from '../bookmarks/Bookmarks'
 import Settings from '../settings/Settings'
 import CreatePost from '../createpost/CreatePost'
-import Admin from '../admin/Admin'
-import AdminLogin from '../admin/AdminLogin'
+import PostDetail from '../postdetail/PostDetail'
 
 function Home() {
-  const { user } = useAuth()
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -34,15 +33,13 @@ function Home() {
   }, [])
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div className="page-shell" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
 
       {/* 3 cột độc lập bằng CSS Grid — cùng gridTemplateColumns với Navbar, mỗi cột tự đứng riêng, sửa cột này không ảnh hưởng cột khác */}
-      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 280px', gap: 20, alignItems: 'start', padding: '80px 20px 20px', minHeight: '100vh' }}>
+      <div className="home-grid" style={{ display: 'grid', gap: 20, alignItems: 'start', padding: '80px 20px 20px', minHeight: '100vh' }}>
 
-        {/* Admin là tài khoản quản trị riêng, không dùng để kết bạn — ẩn nội dung nhưng vẫn giữ chỗ trong lưới,
-            nếu không feed sẽ bị đẩy sang cột đầu (280px) do lưới CSS xếp theo số phần tử con thực có trong DOM */}
-        {user?.role !== 'admin' ? <FriendsPanel /> : <div />}
+        <div className="home-side-panel"><FriendsPanel /></div>
 
         {/* Cột giữa: feed — canh giữa phần còn lại để không bị lệch phải */}
         <div style={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
@@ -77,13 +74,6 @@ function ProtectedRoute({ children }) {
   return children
 }
 
-function AdminRoute({ children }) {
-  const { isAuthenticated, user } = useAuth()
-  if (!isAuthenticated) return <Navigate to="/login" replace />
-  if (user?.role !== 'admin') return <Navigate to="/" replace />
-  return children
-}
-
 function App() {
   return (
     <Routes>
@@ -93,10 +83,9 @@ function App() {
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
       <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
       <Route path="/bookmarks" element={<ProtectedRoute><Bookmarks /></ProtectedRoute>} />
+      <Route path="/post/:id" element={<ProtectedRoute><PostDetail /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="/create-post" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
-      <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
-      <Route path="/admin-portal" element={<AdminLogin />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -110,9 +99,11 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <ThemeProvider>
-          <App />
-        </ThemeProvider>
+        <SocketProvider>
+          <ThemeProvider>
+            <App />
+          </ThemeProvider>
+        </SocketProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

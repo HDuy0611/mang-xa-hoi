@@ -107,6 +107,7 @@ export default function Profile() {
     avatarBg: 'linear-gradient(135deg,#c1793d,#8b4a28)',
     avatarRing: 'linear-gradient(135deg,#d4a574,#8b4a28)',
     stats: { posts: posts.length, friends: friendCount },
+    isAdmin: sourceUser.role === 'admin',
   } : null
 
   const about = sourceUser ? {
@@ -129,7 +130,7 @@ export default function Profile() {
   }
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div className="page-shell" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 60, minHeight: '100vh' }}>
 

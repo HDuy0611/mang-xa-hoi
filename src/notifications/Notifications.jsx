@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import Navbar from '../components/Navbar'
+import { useSocket } from '../core/SocketContext'
 import NotificationItem from './NotificationItem'
 import NotificationSidebar from './NotificationSidebar'
 
@@ -19,12 +20,22 @@ export default function Notifications() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [active, setActive] = useState('all')
+  const { socket } = useSocket()
 
   useEffect(() => {
     axios.get('/api/notifications')
       .then(res => setItems(res.data.notifications))
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    if (!socket) return
+    function onNotification(row) {
+      setItems(list => list.some(n => n.id === row.id) ? list : [row, ...list])
+    }
+    socket.on('notification:new', onNotification)
+    return () => socket.off('notification:new', onNotification)
+  }, [socket])
 
   function markRead(id) {
     setItems(list => list.map(n => n.id === id ? { ...n, isRead: true } : n))
@@ -41,7 +52,7 @@ export default function Notifications() {
   const read = filtered.filter(item => item.isRead)
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+    <div className="page-shell" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Navbar />
       <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 60, minHeight: '100vh' }}>
 
