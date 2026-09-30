@@ -17,13 +17,16 @@ public class UploadService(IWebHostEnvironment env, IConfiguration configuration
         public string? Error { get; init; }
     }
 
-    public async Task<UploadResult> SaveImageAsync(IFormFile? file)
+    // allowVideo = true cho bài đăng (ảnh hoặc video); avatar/ảnh bìa vẫn chỉ nhận ảnh
+    public async Task<UploadResult> SaveImageAsync(IFormFile? file, bool allowVideo = false)
     {
         if (file is null || file.Length == 0)
             return new UploadResult { Success = false, Error = "Vui lòng chọn ảnh." };
 
-        if (!file.ContentType.StartsWith("image/"))
-            return new UploadResult { Success = false, Error = "Chỉ được tải lên file ảnh." };
+        var isImage = file.ContentType.StartsWith("image/");
+        var isVideo = allowVideo && file.ContentType.StartsWith("video/");
+        if (!isImage && !isVideo)
+            return new UploadResult { Success = false, Error = allowVideo ? "Chỉ được tải lên file ảnh hoặc video." : "Chỉ được tải lên file ảnh." };
 
         var uploadsPath = ResolveUploadsPath(env, configuration);
 

@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
   notify_push BOOLEAN NOT NULL DEFAULT TRUE,
   notify_email BOOLEAN NOT NULL DEFAULT TRUE,
   notify_sms BOOLEAN NOT NULL DEFAULT FALSE,
-  theme ENUM('dark', 'light') NOT NULL DEFAULT 'dark',
+  theme ENUM('dark', 'light') NOT NULL DEFAULT 'light',
   is_deactivated BOOLEAN NOT NULL DEFAULT FALSE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

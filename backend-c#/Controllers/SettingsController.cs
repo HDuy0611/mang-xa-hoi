@@ -20,7 +20,7 @@ public class SettingsController(DbConnectionFactory db) : ControllerBase
         notifyPush = true,
         notifyEmail = true,
         notifySms = false,
-        theme = "dark",
+        theme = "light",
     };
 
     [HttpGet]
@@ -63,7 +63,7 @@ public class SettingsController(DbConnectionFactory db) : ControllerBase
         var notifyPush = request.NotifyPush ?? true;
         var notifyEmail = request.NotifyEmail ?? true;
         var notifySms = request.NotifySms ?? false;
-        var theme = request.Theme == "light" ? "light" : "dark";
+        var theme = request.Theme == "dark" ? "dark" : "light";
 
         using var connection = db.CreateConnection();
         await connection.OpenAsync();

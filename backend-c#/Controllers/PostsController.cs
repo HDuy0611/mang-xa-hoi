@@ -56,7 +56,7 @@ public class PostsController(DbConnectionFactory db, UploadService uploadService
         string? imageUrl = null;
         if (image is not null)
         {
-            var uploaded = await uploadService.SaveImageAsync(image);
+            var uploaded = await uploadService.SaveImageAsync(image, allowVideo: true);
             if (!uploaded.Success)
                 return BadRequest(new MessageResponse(uploaded.Error!));
             imageUrl = uploaded.Url;
