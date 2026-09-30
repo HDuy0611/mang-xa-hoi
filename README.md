@@ -48,3 +48,7 @@ Trang Quản trị dùng địa chỉ đăng nhập riêng, không có liên k�
 Mở **http://localhost:5173/admin-portal**, đăng nhập bằng tài khoản trên. Hệ thống sẽ tự chuyển vào trang Quản trị tại `/admin`.
 
 > **Lưu ý thứ tự:** phải chạy xong Backend + Frontend trước (mục 3, 4), vì trang Quản trị dùng chung backend/database với trang chính.
+
+## Phiên bản backend C#
+
+Phiên bản dùng backend C# ASP.NET Core (kèm trang quản trị riêng `admin-web`) nằm ở nhánh [`backend-csharp`](https://github.com/HDuy0611/mang-xa-hoi/tree/backend-csharp)
